@@ -55,10 +55,6 @@
   "jobTitle": "AI / Agent Engineer & Technical Operator",
   "email": "mailto:2379286964@qq.com",
   "knowsLanguage": ["en", "zh-CN"],
-  "alumniOf": {
-    "@type": "CollegeOrUniversity",
-    "name": "Jiangxi University of Finance and Economics"
-  },
   "knowsAbout": [
     "LLM Evaluation", "Agent Engineering", "Model Context Protocol",
     "Model Fine-tuning (PEFT/LoRA)", "Full-stack Development", "DevRel"
@@ -299,6 +295,11 @@
     border-radius:99px; padding:3px 11px; letter-spacing:.02em; }
   .card.feat{ grid-column:span 2; min-height:auto; }
   .card.feat .ct-name{ font-size:22px; }
+  /* ---- static inline-SVG technical banners (no per-frame JS, no animated filters/blurs) ---- */
+  .card .vbanner{ display:block; width:calc(100% + 60px); margin:-30px -30px 20px; border-radius:20px 20px 0 0; background:#fbfaf4; height:auto; }
+  .card.feat .vbanner{ margin:-30px -30px 22px; }
+  .varch{ display:block; width:100%; height:auto; margin:8px 0 28px; background:#fbfaf4; border-radius:16px; }
+  @media (max-width:860px){ .varch{ margin:4px 0 20px; } }
   .repo-note{ text-align:center; margin-top:40px; color:var(--faint); font-size:13.5px; }
   .repo-note a{ color:var(--blue); background-image:linear-gradient(var(--blue),var(--blue));
     background-size:0% 1px; background-position:0 100%; background-repeat:no-repeat;
@@ -459,9 +460,10 @@
   <section class="panel" id="about" aria-labelledby="about-h">
     <div class="wrap">
       <div class="sec-head reveal"><span class="sec-num" aria-hidden="true">01</span><h2 id="about-h" class="sec-title">About<span class="cn" lang="zh-CN">关于</span></h2></div>
+      <div class="reveal"><svg class="varch" viewBox="0 0 840 220" role="img" aria-labelledby="aa-t aa-d" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet"><title id="aa-t">Engineered agent loop architecture</title><desc id="aa-d">An agent loop: a tool call is validated; on success it returns, on failure it routes to an auto-repair retry that loops back, and after exhausted retries it falls back to a frontier model. Every step writes to a JSONL log and monitoring sink.</desc><rect x="0.75" y="0.75" width="838.5" height="218.5" rx="16" fill="#fbfaf4" stroke="#191b1b" stroke-opacity=".12"/><line x1="28" y1="40" x2="812" y2="40" stroke="#191b1b" stroke-opacity=".10"/><g font-family="'Space Grotesk',ui-monospace,monospace" fill="#767972"><text x="28" y="30" font-size="11.5" letter-spacing="2">ENGINEERED AGENT LOOP</text><text x="812" y="30" font-size="10.5" text-anchor="end" letter-spacing="1.5">validate · repair · fallback · log</text></g><g font-family="'Space Grotesk',monospace"><g transform="translate(28 78)"><rect x="0.75" y="0.75" width="118.5" height="48.5" rx="11" fill="#afb6ff" fill-opacity=".14" stroke="#5e53e3" stroke-opacity=".55" stroke-width="1.5"/><text x="60" y="22" text-anchor="middle" font-size="12" fill="#191b1b" font-weight="600">tool call</text><text x="60" y="37" text-anchor="middle" font-size="8.5" fill="#5e53e3">agent action</text></g><g transform="translate(214 102)"><path d="M 0 0 L 42 -36 L 84 0 L 42 36 Z" fill="#8dcbff" fill-opacity=".14" stroke="#0077bc" stroke-opacity=".55" stroke-width="1.5"/><text x="42" y="-2" text-anchor="middle" font-size="11" fill="#191b1b" font-weight="600">validate</text><text x="42" y="11" text-anchor="middle" font-size="8" fill="#0077bc">output ok?</text></g><g transform="translate(360 78)"><rect x="0.75" y="0.75" width="118.5" height="48.5" rx="11" fill="#80daac" fill-opacity=".16" stroke="#00784a" stroke-opacity=".55" stroke-width="1.5"/><text x="60" y="22" text-anchor="middle" font-size="12" fill="#191b1b" font-weight="600">return ✓</text><text x="60" y="37" text-anchor="middle" font-size="8.5" fill="#00784a">validated result</text></g><g transform="translate(360 150)"><rect x="0.75" y="0.75" width="118.5" height="44.5" rx="11" fill="#ebc669" fill-opacity=".20" stroke="#191b1b" stroke-opacity=".4" stroke-width="1.5"/><text x="60" y="20" text-anchor="middle" font-size="11" fill="#191b1b" font-weight="600">repair-retry</text><text x="60" y="34" text-anchor="middle" font-size="8" fill="#5f625c">auto-fix · re-run</text></g><g transform="translate(560 150)"><rect x="0.75" y="0.75" width="128.5" height="44.5" rx="11" fill="#ffa3a3" fill-opacity=".18" stroke="#c0434c" stroke-opacity=".5" stroke-width="1.5"/><text x="65" y="20" text-anchor="middle" font-size="11" fill="#191b1b" font-weight="600">frontier fallback</text><text x="65" y="34" text-anchor="middle" font-size="8" fill="#c0434c">retries exhausted</text></g><g transform="translate(560 60)"><rect x="0.75" y="0.75" width="250.5" height="64.5" rx="11" fill="#5e53e3" fill-opacity=".07" stroke="#5e53e3" stroke-opacity=".4" stroke-width="1.5"/><text x="16" y="24" font-size="11.5" fill="#191b1b" font-weight="600">JSONL log + monitor</text><g stroke="#5e53e3" stroke-opacity=".55" stroke-width="1.5"><line x1="16" y1="38" x2="150" y2="38"/><line x1="16" y1="46" x2="170" y2="46"/><line x1="16" y1="54" x2="120" y2="54"/></g><text x="234" y="56" text-anchor="end" font-size="8" fill="#5e53e3">every step →</text></g></g><g stroke="#191b1b" stroke-width="1.5" fill="none"><g stroke-opacity=".45"><path d="M 148 102 H 212"/><path d="M 206 97 L 212 102 L 206 107"/></g><g stroke-opacity=".45"><path d="M 298 96 C 330 90 332 102 358 102"/><path d="M 352 97 L 358 102 L 352 107"/></g><g stroke-opacity=".45"><path d="M 298 122 C 330 134 332 172 358 172"/><path d="M 352 167 L 358 172 L 352 177"/></g><g stroke="#ebc669" stroke-opacity=".8"><path d="M 360 188 C 200 210 70 196 70 132"/><path d="M 65 138 L 70 131 L 75 138"/></g><g stroke-opacity=".45"><path d="M 480 172 H 558"/><path d="M 552 167 L 558 172 L 552 177"/></g><g stroke-opacity=".3" stroke-dasharray="3 4"><path d="M 624 148 C 624 110 540 104 480 102"/><path d="M 486 97 L 480 102 L 486 107"/></g></g><g font-family="'Space Grotesk',monospace" font-size="8.5"><text x="322" y="88" fill="#00784a">pass</text><text x="318" y="150" fill="#c0434c">fail</text><text x="150" y="160" fill="#ebc669">retry loop</text></g><g stroke="#5e53e3" stroke-opacity=".22" stroke-width="1.2" stroke-dasharray="2 4" fill="none"><path d="M 88 78 V 60 H 560"/><path d="M 419 78 V 70"/><path d="M 419 150 V 132 H 560"/><path d="M 625 150 V 126"/></g></svg></div>
       <div class="about-grid">
         <div>
-          <p class="about-lead reveal">A 2026 graduate who taught himself from law into AI engineering in six months — building the rare overlap of <span class="hl">shipping agent tools</span> and <span class="hl">growing the audience</span> that uses them.</p>
+          <p class="about-lead reveal">A 2026 graduate, self-taught into AI engineering — building the rare overlap of <span class="hl">shipping agent tools</span> and <span class="hl">growing the audience</span> that uses them.</p>
           <div class="about-body" style="margin-top:30px;">
             <p class="reveal d1">I write LLM eval frameworks from scratch (rule × LLM-as-judge, CI gates, JSONL audit), fine-tune small models into tool-calling routers with PEFT/TRL, and build full-stack apps with Claude Code, Cursor &amp; Codex — then run English dev content across TikTok / X / IG. Because I ship the tools myself, the developer content I make actually holds technical weight.</p>
             <p class="reveal d2"><span class="cn" lang="zh-CN">懂代码的技术型运营 × 能造工具的 Agent 工程师。从零写 LLM 评测框架、把 0.5B 小模型 LoRA 调成工具路由器、用 AI 编程做全栈并部署上线；同时运营海外英文号。最大的差异化：同一个人既造工具，又能把工具讲成开发者信得过的内容。</span></p>
@@ -471,12 +473,25 @@
           <div class="stats">
             <div class="stat"><div class="n">70+</div><div class="l">Claude Code Skills</div></div>
             <div class="stat"><div class="n">20+</div><div class="l">MCP Servers</div></div>
-            <div class="stat"><div class="n">1000+</div><div class="l" lang="zh-CN">垂类精准粉丝 · 全平台</div></div>
+            <div class="stat"><div class="n">5</div><div class="l">Open-source projects</div></div>
             <div class="stat"><div class="n">100%</div><div class="l" lang="zh-CN">开源可点开复现</div></div>
           </div>
-          <div class="about-body" style="margin-top:24px;font-size:14px;">
-            <p lang="zh-CN">江西财经大学 · 法学本科 · 2022 – 2026<br/>CET-4 / CET-6 · 英文为工作语言<br/>非 CS 科班 · 自学转 AI 工程</p>
-          </div>
+          <dl style="margin-top:24px;display:grid;grid-template-columns:auto 1fr;column-gap:18px;row-gap:14px;font-size:13.5px;line-height:1.5;">
+            <dt style="font-family:'Space Grotesk',sans-serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--label);padding-top:2px;">Focus</dt>
+            <dd style="color:var(--dim);margin:0;">LLM eval &amp; reliability · Agent / MCP engineering · applied model fine-tuning (PEFT/LoRA) · full-stack &amp; deploy.
+              <span class="cn" lang="zh-CN" style="display:block;color:var(--faint);font-size:13px;margin-top:5px;">评测与可靠性 · Agent / MCP 工程 · 模型微调（应用层）· 全栈与部署</span></dd>
+
+            <dt style="font-family:'Space Grotesk',sans-serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--label);padding-top:2px;">Stack</dt>
+            <dd style="color:var(--dim);margin:0;">Python / FastAPI · Node / TypeScript · React / Next.js · Claude Code · Cursor · Codex · Vercel / Zeabur.</dd>
+
+            <dt style="font-family:'Space Grotesk',sans-serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--label);padding-top:2px;">Build</dt>
+            <dd style="color:var(--dim);margin:0;"><b style="color:var(--ink);font-weight:500;">promptlab</b> · <b style="color:var(--ink);font-weight:500;">tool-smith</b> · <b style="color:var(--ink);font-weight:500;">thesis-generator</b> · <b style="color:var(--ink);font-weight:500;">matlab-viz-mcp</b> · <b style="color:var(--ink);font-weight:500;">paper-search-server</b> — from idea to production.
+              <span class="cn" lang="zh-CN" style="display:block;color:var(--faint);font-size:13px;margin-top:5px;">从想法到上线交付</span></dd>
+
+            <dt style="font-family:'Space Grotesk',sans-serif;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--label);padding-top:2px;">Open</dt>
+            <dd style="color:var(--dim);margin:0;">Everything open-source &amp; reproducible at <span style="color:var(--ink);">github.com/ganlin770</span>. English is a working language.
+              <span class="cn" lang="zh-CN" style="display:block;color:var(--faint);font-size:13px;margin-top:5px;">作品全部开源、可点开复现；英文为工作语言</span></dd>
+          </dl>
         </div>
       </div>
     </div>
@@ -489,6 +504,50 @@
       <div class="work-grid">
 
         <a class="card reveal" href="https://github.com/ganlin770/promptlab" target="_blank" rel="noopener" aria-label="promptlab on GitHub, opens in new tab">
+          <div class="vbanner" aria-hidden="false"><svg role="img" aria-labelledby="pl-t pl-d" viewBox="0 0 640 180" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">
+<title id="pl-t">PromptLab LLM evaluation framework</title>
+<desc id="pl-d">Metric bars and a pass-rate gauge feed a rule and LLM-judge scorer into a CI gate node with a check mark labeled dash-dash min-pass-rate, emitting a JSONL report.</desc>
+<g fill="none" stroke="#191b1b" stroke-width="1.4" stroke-opacity="0.8" stroke-linecap="round" stroke-linejoin="round">
+<!-- metric bars -->
+<rect x="34" y="116" width="14" height="32" rx="2" fill="#efede7"/>
+<rect x="56" y="92" width="14" height="56" rx="2" fill="#80daac" fill-opacity="0.55"/>
+<rect x="78" y="104" width="14" height="44" rx="2" fill="#efede7"/>
+<rect x="100" y="80" width="14" height="68" rx="2" fill="#80daac" fill-opacity="0.55"/>
+<rect x="122" y="110" width="14" height="38" rx="2" fill="#efede7"/>
+<line x1="30" y1="148" x2="142" y2="148"/>
+<!-- pass-rate gauge -->
+<path d="M188 132 A40 40 0 0 1 268 132" fill="none" stroke="#efede7" stroke-width="9"/>
+<path d="M188 132 A40 40 0 0 1 258 108" fill="none" stroke="#80daac" stroke-width="9"/>
+<line x1="228" y1="132" x2="252" y2="114"/>
+<circle cx="228" cy="132" r="3.4" fill="#191b1b" stroke="none"/>
+<!-- scorer node -->
+<rect x="312" y="62" width="124" height="56" rx="9" fill="#ffffff" fill-opacity="0.55"/>
+<line x1="374" y1="62" x2="374" y2="118" stroke-opacity="0.4"/>
+<!-- arrow scorer -> gate -->
+<path d="M436 90 H498"/>
+<path d="M490 84 L498 90 L490 96"/>
+<!-- CI gate node -->
+<rect x="500" y="58" width="100" height="64" rx="10" fill="#80daac" fill-opacity="0.18"/>
+<path d="M534 90 l9 10 18 -22" stroke="#0077bc" stroke-width="2.4"/>
+<!-- JSONL doc glyph -->
+<path d="M540 132 h44 a6 6 0 0 1 6 6 v26 a6 6 0 0 1 -6 6 h-44 a6 6 0 0 1 -6 -6 v-26 a6 6 0 0 1 6 -6 Z" fill="#ffffff" fill-opacity="0.6"/>
+<line x1="548" y1="146" x2="582" y2="146" stroke-opacity="0.45"/>
+<line x1="548" y1="154" x2="576" y2="154" stroke-opacity="0.45"/>
+<line x1="548" y1="162" x2="582" y2="162" stroke-opacity="0.45"/>
+<!-- arrow gauge -> scorer -->
+<path d="M276 102 H304"/>
+<path d="M296 96 L304 102 L296 108"/>
+</g>
+<g font-family="monospace" font-size="10" fill="#51544f" letter-spacing="1.2">
+<text x="34" y="40">METRICS</text>
+<text x="178" y="40">PASS-RATE</text>
+<text x="318" y="50">RULE &#215; LLM-JUDGE</text>
+<text x="206" y="158" fill="#191b1b" font-size="11">92%</text>
+<text x="504" y="48">CI GATE</text>
+<text x="540" y="128">JSONL</text>
+</g>
+<text x="500" y="118" font-family="monospace" font-size="9" fill="#191b1b" letter-spacing="0.6">--min-pass-rate</text>
+</svg></div>
           <div class="ct-top"><h3 class="ct-name">promptlab</h3><span class="ct-link"><span aria-hidden="true">GitHub ↗</span></span></div>
           <div class="ct-desc">From-scratch LLM eval framework — rule × LLM-as-judge engine, HTML reports + JSONL audit, wired into a CI gate (<code>--min-pass-rate</code>) for regression control.
             <span class="cn" lang="zh-CN">把「评测」当一等公民：用可复现指标证明 agent 行为，离线 mock 可跑、pytest 覆盖。</span></div>
@@ -496,6 +555,51 @@
         </a>
 
         <a class="card reveal d1" href="https://github.com/ganlin770/tool-smith" target="_blank" rel="noopener" aria-label="tool-smith on GitHub, opens in new tab">
+          <div class="vbanner" aria-hidden="false"><svg role="img" aria-labelledby="ts-t ts-d" viewBox="0 0 640 180" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">
+<title id="ts-t">Tool-Smith tool-calling router</title>
+<desc id="ts-d">A prompt box feeds a fine-tuned 0.5B model node that branches to three tool nodes; a before-and-after bar pair shows tool-call accuracy rising from 4.1 percent to 74.2 percent.</desc>
+<g fill="none" stroke="#191b1b" stroke-width="1.4" stroke-opacity="0.8" stroke-linecap="round" stroke-linejoin="round">
+<!-- PROMPT box -->
+<rect x="28" y="74" width="96" height="44" rx="9" fill="#ffffff" fill-opacity="0.55"/>
+<!-- arrow prompt -> model -->
+<path d="M124 96 H164"/>
+<path d="M156 90 L164 96 L156 102"/>
+<!-- 0.5B model node -->
+<rect x="166" y="64" width="92" height="64" rx="11" fill="#5e53e3" fill-opacity="0.16"/>
+<circle cx="212" cy="96" r="15" fill="#ffffff" fill-opacity="0.6"/>
+<!-- branches to 3 tools -->
+<path d="M258 84 C300 60 320 50 360 46"/>
+<path d="M258 96 H360"/>
+<path d="M258 108 C300 132 320 142 360 146"/>
+<!-- tool nodes -->
+<rect x="362" y="30" width="116" height="34" rx="8" fill="#8dcbff" fill-opacity="0.22"/>
+<rect x="362" y="79" width="116" height="34" rx="8" fill="#8dcbff" fill-opacity="0.22"/>
+<rect x="362" y="128" width="116" height="34" rx="8" fill="#8dcbff" fill-opacity="0.22"/>
+<!-- tiny tool glyphs -->
+<path d="M374 43 h12 M380 37 v12" stroke="#5e53e3"/>
+<circle cx="380" cy="96" r="5" stroke="#5e53e3"/>
+<path d="M374 145 l5 5 9 -10" stroke="#5e53e3"/>
+<!-- before -> after bars -->
+<rect x="512" y="120" width="20" height="14" rx="2" fill="#efede7"/>
+<rect x="558" y="74" width="20" height="60" rx="2" fill="#5e53e3" fill-opacity="0.55"/>
+<line x1="506" y1="134" x2="600" y2="134"/>
+<path d="M536 110 H552"/>
+<path d="M546 105 L552 110 L546 115"/>
+</g>
+<g font-family="monospace" font-size="10" fill="#51544f" letter-spacing="1.1">
+<text x="40" y="42">PROMPT</text>
+<text x="186" y="42">0.5B FT</text>
+<text x="396" y="22">TOOLS</text>
+<text x="392" y="100" fill="#191b1b">search</text>
+<text x="392" y="51" fill="#191b1b">code</text>
+<text x="392" y="149" fill="#191b1b">db</text>
+<text x="506" y="46">ACCURACY</text>
+</g>
+<g font-family="monospace" font-size="9" fill="#191b1b" letter-spacing="0.4">
+<text x="506" y="150">4.1%</text>
+<text x="554" y="68">74.2%</text>
+</g>
+</svg></div>
           <div class="ct-top"><h3 class="ct-name">tool-smith</h3><span class="ct-link"><span aria-hidden="true">GitHub ↗</span></span></div>
           <div class="ct-desc">Fine-tuned Qwen2.5-0.5B into a tool-calling router (PEFT + TRL, LoRA/SFT) — <b>fully-correct tool calls 4.1% → 74.2%, hard cases 0 → 76.7%</b> on a self-built base-vs-tuned eval. Wrapped in an engineered agent loop: validate → auto-repair retry → frontier fallback → full JSONL logging.
             <span class="cn" lang="zh-CN">自建 base-vs-tuned 评测：完全正确 4.1%→74.2%，难例 0→76.7%，loss 4.3→0.35。</span></div>
@@ -503,6 +607,48 @@
         </a>
 
         <a class="card reveal" href="https://github.com/ganlin770/thesis-generator" target="_blank" rel="noopener" aria-label="thesis-generator on GitHub, opens in new tab">
+          <div class="vbanner" aria-hidden="false"><svg role="img" aria-labelledby="tg-t tg-d" viewBox="0 0 640 180" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">
+<title id="tg-t">Thesis Generator FastAPI pipeline</title>
+<desc id="tg-d">Eight numbered stage nodes connected left to right over a server-sent-events stream rail, ending in a DOCX output document glyph.</desc>
+<g fill="none" stroke="#191b1b" stroke-width="1.4" stroke-opacity="0.8" stroke-linecap="round" stroke-linejoin="round">
+<!-- SSE rail -->
+<line x1="38" y1="120" x2="540" y2="120" stroke-opacity="0.35" stroke-dasharray="2 6"/>
+<!-- 8 stage circles + connectors -->
+<line x1="56" y1="86" x2="96" y2="86"/>
+<line x1="120" y1="86" x2="156" y2="86"/>
+<line x1="180" y1="86" x2="216" y2="86"/>
+<line x1="240" y1="86" x2="276" y2="86"/>
+<line x1="300" y1="86" x2="336" y2="86"/>
+<line x1="360" y1="86" x2="396" y2="86"/>
+<line x1="420" y1="86" x2="456" y2="86"/>
+<line x1="480" y1="86" x2="512" y2="86"/>
+<circle cx="44" cy="86" r="14" fill="#8dcbff" fill-opacity="0.22"/>
+<circle cx="108" cy="86" r="14" fill="#8dcbff" fill-opacity="0.22"/>
+<circle cx="168" cy="86" r="14" fill="#8dcbff" fill-opacity="0.22"/>
+<circle cx="228" cy="86" r="14" fill="#8dcbff" fill-opacity="0.22"/>
+<circle cx="288" cy="86" r="14" fill="#8dcbff" fill-opacity="0.22"/>
+<circle cx="348" cy="86" r="14" fill="#8dcbff" fill-opacity="0.22"/>
+<circle cx="408" cy="86" r="14" fill="#8dcbff" fill-opacity="0.22"/>
+<circle cx="468" cy="86" r="14" fill="#8dcbff" fill-opacity="0.22"/>
+<!-- arrow to docx -->
+<path d="M512 86 H548"/>
+<path d="M540 80 L548 86 L540 92"/>
+<!-- DOCX doc glyph -->
+<path d="M552 56 h44 a6 6 0 0 1 6 6 v52 a6 6 0 0 1 -6 6 h-44 a6 6 0 0 1 -6 -6 v-52 a6 6 0 0 1 6 -6 Z" fill="#ffffff" fill-opacity="0.6"/>
+<line x1="560" y1="74" x2="594" y2="74" stroke-opacity="0.45"/>
+<line x1="560" y1="84" x2="594" y2="84" stroke-opacity="0.45"/>
+<line x1="560" y1="94" x2="588" y2="94" stroke-opacity="0.45"/>
+</g>
+<g font-family="monospace" font-size="11" fill="#191b1b" letter-spacing="0.5" text-anchor="middle">
+<text x="44" y="90">1</text><text x="108" y="90">2</text><text x="168" y="90">3</text><text x="228" y="90">4</text>
+<text x="288" y="90">5</text><text x="348" y="90">6</text><text x="408" y="90">7</text><text x="468" y="90">8</text>
+</g>
+<g font-family="monospace" font-size="10" fill="#51544f" letter-spacing="1.1">
+<text x="38" y="44">8-STAGE FASTAPI PIPELINE</text>
+<text x="38" y="142">SSE STREAM</text>
+<text x="556" y="142" fill="#191b1b">DOCX</text>
+</g>
+</svg></div>
           <div class="ct-top"><h3 class="ct-name">thesis-generator</h3><span class="ct-link"><span aria-hidden="true">GitHub ↗</span></span></div>
           <div class="ct-desc">A full-stack LLM app shipped to production — 8-stage pipeline on FastAPI with SSE live progress, Claude API + python-docx, deployed on Zeabur.
             <span class="cn" lang="zh-CN">从一个想法独立交付上线，端到端全栈流水线。</span></div>
@@ -510,6 +656,41 @@
         </a>
 
         <a class="card reveal d1" href="https://github.com/ganlin770/matlab-viz-mcp" target="_blank" rel="noopener" aria-label="matlab-viz-mcp on GitHub, opens in new tab">
+          <div class="vbanner" aria-hidden="false"><svg role="img" aria-labelledby="mm-t mm-d" viewBox="0 0 640 180" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">
+<title id="mm-t">MATLAB Viz MCP server node graph</title>
+<desc id="mm-d">An LLM node connects bidirectionally to an MCP Server node over a link labeled Model Context Protocol, which connects bidirectionally to a MATLAB node.</desc>
+<g fill="none" stroke="#191b1b" stroke-width="1.4" stroke-opacity="0.8" stroke-linecap="round" stroke-linejoin="round">
+<!-- LLM node -->
+<rect x="36" y="62" width="116" height="56" rx="11" fill="#ffffff" fill-opacity="0.55"/>
+<circle cx="64" cy="90" r="8" fill="#afb6ff" fill-opacity="0.5"/>
+<!-- MCP server node (center) -->
+<rect x="262" y="52" width="120" height="76" rx="12" fill="#afb6ff" fill-opacity="0.2"/>
+<rect x="284" y="74" width="76" height="10" rx="2" fill="#ffffff" fill-opacity="0.7"/>
+<rect x="284" y="90" width="76" height="10" rx="2" fill="#ffffff" fill-opacity="0.7"/>
+<circle cx="292" cy="79" r="1.6" fill="#191b1b" stroke="none"/>
+<circle cx="292" cy="95" r="1.6" fill="#191b1b" stroke="none"/>
+<!-- MATLAB node -->
+<rect x="492" y="62" width="116" height="56" rx="11" fill="#ffffff" fill-opacity="0.55"/>
+<path d="M512 104 C522 104 524 78 534 78 C544 78 546 104 556 104" stroke="#afb6ff"/>
+<!-- bidirectional link LLM <-> MCP -->
+<path d="M152 90 H260"/>
+<path d="M160 84 L152 90 L160 96"/>
+<path d="M252 84 L260 90 L252 96"/>
+<!-- bidirectional link MCP <-> MATLAB -->
+<path d="M382 90 H490"/>
+<path d="M390 84 L382 90 L390 96"/>
+<path d="M482 84 L490 90 L482 96"/>
+</g>
+<g font-family="monospace" font-size="10" fill="#51544f" letter-spacing="1.2">
+<text x="50" y="40">LLM CLIENT</text>
+<text x="278" y="40">MCP SERVER</text>
+<text x="510" y="40">MATLAB</text>
+</g>
+<g font-family="monospace" font-size="11" fill="#191b1b" letter-spacing="0.4">
+<text x="64" y="94" text-anchor="middle" font-size="10">AI</text>
+</g>
+<text x="170" y="78" font-family="monospace" font-size="9" fill="#51544f" letter-spacing="0.6">Model Context Protocol</text>
+</svg></div>
           <div class="ct-top"><h3 class="ct-name">matlab-viz-mcp</h3><span class="ct-link"><span aria-hidden="true">GitHub ↗</span></span></div>
           <div class="ct-desc">An MCP server that lets LLMs generate MATLAB visualizations through the Model Context Protocol.
             <span class="cn" lang="zh-CN">代表性 MCP 节点，Node MCP SDK 实现。</span></div>
@@ -517,6 +698,48 @@
         </a>
 
         <a class="card feat reveal" href="https://github.com/ganlin770" target="_blank" rel="noopener" aria-label="AIGC content pipeline and the 70+ skill matrix on GitHub, opens in new tab">
+          <div class="vbanner" aria-hidden="false"><svg role="img" aria-labelledby="ag-t ag-d" viewBox="0 0 640 180" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">
+<title id="ag-t">AIGC content pipeline</title>
+<desc id="ag-d">A five-step flow from script to visuals to cloned TTS to ffmpeg mux to subtitle QA, beside a small node grid hinting seventy-plus skills and twenty-plus MCP servers.</desc>
+<g fill="none" stroke="#191b1b" stroke-width="1.4" stroke-opacity="0.8" stroke-linecap="round" stroke-linejoin="round">
+<!-- 5 pipeline boxes -->
+<rect x="24" y="40" width="92" height="40" rx="8" fill="#ffa3a3" fill-opacity="0.18"/>
+<rect x="24" y="96" width="92" height="40" rx="8" fill="#ffa3a3" fill-opacity="0.18"/>
+<rect x="160" y="68" width="92" height="40" rx="8" fill="#ebc669" fill-opacity="0.22"/>
+<rect x="296" y="68" width="92" height="40" rx="8" fill="#ffa3a3" fill-opacity="0.18"/>
+<rect x="432" y="68" width="92" height="40" rx="8" fill="#ebc669" fill-opacity="0.22"/>
+<!-- connectors converge then chain -->
+<path d="M116 60 C138 60 140 84 158 86"/>
+<path d="M116 116 C138 116 140 92 158 90"/>
+<path d="M252 88 H294"/><path d="M286 82 L294 88 L286 94"/>
+<path d="M388 88 H430"/><path d="M422 82 L430 88 L422 94"/>
+<!-- waveform hint in TTS box -->
+<path d="M174 88 v-7 M180 88 v-12 M186 88 v-5 M192 88 v-14 M198 88 v-8" stroke="#ebc669"/>
+<!-- node grid -->
+<rect x="548" y="40" width="64" height="96" rx="9" fill="#ffffff" fill-opacity="0.5"/>
+</g>
+<g fill="#ffa3a3" fill-opacity="0.7" stroke="none">
+<circle cx="562" cy="58" r="3"/><circle cx="578" cy="58" r="3"/><circle cx="594" cy="58" r="3"/>
+<circle cx="562" cy="74" r="3"/><circle cx="594" cy="90" r="3"/>
+</g>
+<g fill="#ebc669" fill-opacity="0.85" stroke="none">
+<circle cx="578" cy="74" r="3"/><circle cx="594" cy="74" r="3"/>
+<circle cx="562" cy="90" r="3"/><circle cx="578" cy="90" r="3"/>
+<circle cx="562" cy="106" r="3"/><circle cx="578" cy="106" r="3"/><circle cx="594" cy="106" r="3"/>
+</g>
+<g font-family="monospace" font-size="10" fill="#191b1b" letter-spacing="0.4" text-anchor="middle">
+<text x="70" y="64">SCRIPT</text>
+<text x="70" y="120">VISUALS</text>
+<text x="206" y="92">TTS clone</text>
+<text x="342" y="92">ffmpeg mux</text>
+<text x="478" y="92">subtitle QA</text>
+</g>
+<g font-family="monospace" font-size="10" fill="#51544f" letter-spacing="1.1">
+<text x="24" y="24">AIGC PIPELINE</text>
+<text x="546" y="158" font-size="9">70+ SKILLS</text>
+<text x="546" y="170" font-size="9">20+ MCP</text>
+</g>
+</svg></div>
           <div class="ct-top"><h3 class="ct-name">AIGC content pipeline &amp; the 70+ skill matrix</h3><span class="ct-link"><span aria-hidden="true">GitHub ↗</span></span></div>
           <div class="ct-desc">An end-to-end production line — script → visuals → cloned-voice TTS (MiniMax / ElevenLabs / F5-TTS) → ffmpeg mux → subtitle QA — driving bilingual dev content across TikTok / X / IG and 小红书 / 抖音 / B站 — <b>1000+ niche-precise followers</b> across platforms. Built on a self-made matrix of 70+ Claude Code Skills &amp; 20+ MCP Servers, including <b>paper-search-server</b> (Scopus search over Flask).
             <span class="cn" lang="zh-CN">技术可信度驱动的开发者增长：自建生产线支撑日更，全平台合计垂类精准粉丝 1000+，跑通 选题→生产→分发→复盘→付费 闭环。</span></div>
