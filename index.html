@@ -508,99 +508,460 @@ var RM = matchMedia('(prefers-reduced-motion: reduce)');
 
   const vsrc = `attribute vec2 p; void main(){ gl_Position = vec4(p,0.0,1.0); }`;
   const fsrc = `
-  precision highp float;
-  uniform vec2 uRes; uniform float uTime; uniform vec2 uMouse; uniform float uDPR; uniform float uLeftBias;
-  float hash(vec2 p){ p=fract(p*vec2(123.34,345.45)); p+=dot(p,p+34.345); return fract(p.x*p.y); }
-  float noise(vec2 p){ vec2 i=floor(p),f=fract(p); vec2 u=f*f*(3.0-2.0*f);
-    float a=hash(i),b=hash(i+vec2(1.,0.)),c=hash(i+vec2(0.,1.)),d=hash(i+vec2(1.,1.));
-    return mix(mix(a,b,u.x),mix(c,d,u.x),u.y); }
-  float fbm(vec2 p){ float v=0.,a=0.55; mat2 m=mat2(1.6,1.2,-1.2,1.6);
-    for(int i=0;i<6;i++){ v+=a*noise(p); p=m*p; a*=0.5; } return v; }
-  vec3 pal(float t){ vec3 a=vec3(0.22,0.24,0.36),b=vec3(0.20,0.21,0.30),c=vec3(1.0),d=vec3(0.02,0.12,0.24);
-    return a+b*cos(6.28318*(c*t+d)); }
-  vec3 aces(vec3 x){ float A=2.51,B=0.03,C=2.43,D=0.59,E=0.14; return clamp((x*(A*x+B))/(x*(C*x+D)+E),0.0,1.0); }
-  /* one faint anisotropic ribbon, far depth, low chroma — MicrosoftAI directional streak */
-  float ribbon(vec2 uv,float t){
-    float a=uv.x*0.5+uv.y*0.85;
-    float s=sin(a*2.4 + t*0.6 + fbm(uv*1.2+t*0.2)*1.8);
-    return smoothstep(0.55,1.0,s);
+precision highp float;
+uniform vec2 uRes; uniform float uTime; uniform vec2 uMouse; uniform float uDPR; uniform float uLeftBias;
+uniform float uScroll;        // 0 hero top .. 1 content scrim risen
+uniform float uReduce;        // 1 animate, 0 reduced-motion (freeze temporal dither)
+uniform float uQuality;       // 1 full, 0 lite (drops loop samples)
+uniform float uGlassDisp;     // overall refraction displacement (0.16 thin .. 0.26 chunky)
+uniform float uDispSpread;    // spectral spread (rainbow); ~0.09
+uniform float uFilmThick;     // thin-film hue sweep rate on rim (2.0..4.0)
+uniform float uCoreGlow;      // trapped-light crystal core density (0.4..0.7)
+uniform float uEnvReflAmt;    // reflected-ray sample parallax
+uniform float uEnvReflStr;    // reflection strength before Fresnel gate
+uniform float uFrost;         // 0 clear jewel .. ~1 satin frost
+uniform float uCA;            // base chromatic aberration (~0.004)
+uniform float uBarrel;        // subtle lens bow (0 .. ~0.03)
+uniform float uBumpAmp;       // surface micro-character amplitude (0 clear .. ~0.10 hand-blown)
+uniform float uCorona;        // backlight corona / shafts / rim master (0 off .. ~1.2)
+
+float hash(vec2 p){ p=fract(p*vec2(123.34,345.45)); p+=dot(p,p+34.345); return fract(p.x*p.y); }
+float ign(vec2 p){ return fract(52.9829189*fract(dot(p,vec2(0.06711056,0.00583715)))); }
+float noise(vec2 p){ vec2 i=floor(p),f=fract(p); vec2 u=f*f*(3.0-2.0*f);
+  float a=hash(i),b=hash(i+vec2(1.,0.)),c=hash(i+vec2(0.,1.)),d=hash(i+vec2(1.,1.));
+  return mix(mix(a,b,u.x),mix(c,d,u.x),u.y); }
+float fbm(vec2 p){ float v=0.,a=0.55; mat2 m=mat2(1.6,1.2,-1.2,1.6);
+  for(int i=0;i<6;i++){ v+=a*noise(p); p=m*p; a*=0.5; } return v; }
+float fbm3(vec2 p){ float v=0.,a=0.55; mat2 m=mat2(1.6,1.2,-1.2,1.6);
+  for(int i=0;i<3;i++){ v+=a*noise(p); p=m*p; a*=0.5; } return v*1.18; }
+vec3 pal(float t){ vec3 a=vec3(0.22,0.24,0.36),b=vec3(0.20,0.21,0.30),c=vec3(1.0),d=vec3(0.02,0.12,0.24);
+  return a+b*cos(6.28318*(c*t+d)); }
+vec2 rot2(vec2 p,float a){ float s=sin(a),c=cos(a); return mat2(c,-s,s,c)*p; }
+float ribbon(vec2 uv,float t){ float a=uv.x*0.5+uv.y*0.85;
+  float s=sin(a*2.4 + t*0.6 + fbm(uv*1.2+t*0.2)*1.8); return smoothstep(0.55,1.0,s); }
+
+// === HERO field (fbm6): full volumetric light field with parallax / god-rays / glints / aerial fog ===
+vec3 field(vec2 uv){
+  vec2 mPar=(uMouse*2.0-1.0); mPar.x*=uRes.x/uRes.y;     // aspect-correct pointer, 0 when centered
+  float t=uTime*0.045; vec2 q=uv*1.05;
+  vec2 bgShift=-mPar*0.020;                              // deep haze barely moves
+  vec2 w=vec2(fbm(q+vec2(0.0,t)+bgShift),fbm(q+vec2(3.2,-t)+bgShift));
+  // === FLUID curl-noise warp (divergence-free); replaces the old n/flow fbm pair ===
+  // cheap single-octave scalar potential psi, advected by the existing broad w (no new fbm6).
+  vec2 pq = q*1.25 + 0.9*w + vec2(0.0, t*1.3) + bgShift;
+  float e = 0.22;                                        // finite-difference step (domain units)
+  float pX1 = noise(pq + vec2(e,0.0)), pX0 = noise(pq - vec2(e,0.0));
+  float pY1 = noise(pq + vec2(0.0,e)), pY0 = noise(pq - vec2(0.0,e)); // 4 noise() taps
+  vec2 curl = vec2(pY1 - pY0, -(pX1 - pX0)) / (2.0*e);                // (dpsi/dy, -dpsi/dx) -> div-free
+  float swirlAmt = mix(0.07, 0.16, clamp(uQuality,0.0,1.0));          // calmer on lite
+  vec2 flowUV = q + 1.55*w + curl*swirlAmt;                           // curl folds the warp -> swirl
+  float n   = fbm(flowUV + t*0.4 + bgShift);                          // 1 fbm6 (same count as before)
+  float stream = 0.5 + 0.5*(pY1 - pY0);                              // signed curl streamline -> aurora mix
+  // deepened COLD aurora gradient: two cold stops cross-faded by the streamline
+  vec3 col = mix( pal(0.44 + n*0.16), pal(0.58 + n*0.10), clamp(stream,0.0,1.0) );
+  col *= (0.15 + 0.55*n);
+  // parallax FAR layer (reuses w, decorrelated via .yx) -> motion depth
+  float tFar=t*0.55;
+  float far=fbm(q*0.55+1.1*w.yx+vec2(tFar,-tFar*0.7));
+  float depth=clamp(0.35+0.65*far,0.0,1.0);
+  col=mix(col, col*0.72+pal(0.50)*0.20, (1.0-depth)*0.55);
+  col+=pal(0.49)*pow(max(far,0.0),2.0)*0.08*depth;
+  // anisotropic god-ray streaks (near field), gently steerable
+  float ang=2.18+(uMouse.x-0.5)*0.30;
+  vec2 suv=rot2(uv,ang);
+  float shaftN=fbm(vec2(suv.x*5.0,suv.y*0.7)+w*0.6+vec2(0.0,t*2.2));
+  float shaft=pow(smoothstep(0.45,1.0,shaftN),3.0);
+  shaft+=0.5*pow(smoothstep(0.5,1.0,fbm(vec2(suv.x*9.0,suv.y*0.5)-w*0.4)),4.0);
+  shaft*=depth;
+  col+=pal(0.56)*shaft*0.30;
+  // sparse twinkling glints (single-octave noise, near field)
+  vec2 gp=uv*3.4+w*0.3;
+  float cell=noise(floor(gp)+0.5);
+  float spark=pow(noise(gp+cell*7.0),26.0);
+  spark*=0.5+0.5*sin(t*22.0+cell*40.0);
+  col+=pal(0.60)*spark*1.4*depth;
+  // depth-shifted accent glows
+  vec2 fgShift=-mPar*0.060;
+  vec2 c1=vec2(0.55+0.30*sin(t*1.2),0.30*cos(t*1.05))+fgShift;
+  vec2 c2=vec2(-0.10-0.30*cos(t*0.8),-0.28*sin(t*1.3))+fgShift*0.7;
+  col+=pal(0.58)*(0.10/(0.10+dot(uv-c1,uv-c1)))*0.22;
+  col+=pal(0.62)*(0.08/(0.08+dot(uv-c2,uv-c2)))*0.13;
+  col+=pal(0.52)*ribbon(uv*0.9+vec2(0.0,t*0.5)-mPar*0.035,t)*0.25*0.5;
+  // aerial-perspective fog: far recedes into cold base
+  float fogK=clamp(0.30+0.62*n,0.0,1.0)*mix(0.65,1.0,depth);
+  col=mix(vec3(0.006,0.009,0.020),col,fogK);
+  col=mix(col,vec3(0.012,0.020,0.040),(1.0-depth)*0.18);
+  return col;
+}
+
+// === CHEAP field (fbm3): for spatially-averaged consumers (refraction / env-refl / bloom) ===
+vec3 field3(vec2 uv){
+  float t=uTime*0.045; vec2 q=uv*1.05;
+  vec2 w=vec2(fbm3(q+vec2(0.0,t)),fbm3(q+vec2(3.2,-t)));
+  // === matched fluid warp: 2-tap forward-difference curl (cheap, gated on lite) ===
+  vec2 pq3 = q*1.25 + 0.9*w + vec2(0.0, t*1.3);
+  float e3 = 0.30;
+  vec2 curl3 = vec2(0.0); float stream3 = 0.5;
+  if(uQuality>0.5){
+    float p0 = noise(pq3);
+    float pYf = noise(pq3 + vec2(0.0,e3));            // +1 noise (full only)
+    float pXf = noise(pq3 + vec2(e3,0.0));            // +1 noise (full only)
+    curl3 = vec2(pYf - p0, -(pXf - p0)) / e3;
+    stream3 = 0.5 + 0.5*(pYf - p0);
   }
-  vec3 field(vec2 uv){
-    float t=uTime*0.045; vec2 q=uv*1.05;
-    vec2 w=vec2(fbm(q+vec2(0.0,t)),fbm(q+vec2(3.2,-t)));
-    float n=fbm(q+1.7*w+t*0.4); float flow=fbm(q*1.4-w*1.0+t);
-    vec3 col=pal(0.46+n*0.30+flow*0.18); col*=(0.15+0.55*n);
-    vec2 c1=vec2(0.55+0.30*sin(t*1.2),0.30*cos(t*1.05));
-    vec2 c2=vec2(-0.10-0.30*cos(t*0.8),-0.28*sin(t*1.3));
-    col+=pal(0.58)*(0.10/(0.10+dot(uv-c1,uv-c1)))*0.22;
-    col+=pal(0.30)*(0.08/(0.08+dot(uv-c2,uv-c2)))*0.13;
-    col+=pal(0.52)*ribbon(uv*0.9+vec2(0.0,t*0.5),t)*0.25;
-    col=mix(vec3(0.006,0.009,0.018),col,clamp(0.30+0.62*n,0.0,1.0));
-    return col; }
-  vec3 bloomSample(vec2 uv){
-    vec3 acc=vec3(0.0); float r=0.045;
-    for(int i=0;i<6;i++){ float a=6.28318*float(i)/6.0; vec2 o=vec2(cos(a),sin(a))*r; acc+=field(uv+o); }
-    acc/=6.0; return max(acc-0.42,0.0)*1.6; }
-  void main(){
-    vec2 frag=gl_FragCoord.xy;
-    vec2 uv=(frag*2.0-uRes)/uRes.y;
-    vec2 px=frag/uRes;
-    vec2 m=(uMouse*2.0-1.0); m.x*=uRes.x/uRes.y;
-    vec2 ca=uv*0.004*dot(uv,uv);
-    vec3 bg; bg.r=field(uv+ca).r; bg.g=field(uv).g; bg.b=field(uv-ca).b;
-    vec3 col=bg;
-    vec2 ctr=vec2(0.42,0.0)+m*0.16;
-    float R=0.60; vec2 pp=uv-ctr; float d=length(pp);
-    if(d<R){
-      float z=sqrt(max(R*R-d*d,0.0))/R;
-      vec3 nrm=normalize(vec3(pp/R,z));
-      vec3 V=vec3(0.0,0.0,1.0);
-      float ndv=max(dot(nrm,V),0.0);
-      float disp=0.22+0.05*z;
-      vec3 glass=vec3(0.0); vec3 wsum=vec3(0.0);
-      for(int i=0;i<6;i++){
-        float f=float(i)/5.0;
-        float ior=mix(1.42,1.62,f);
-        vec3 rdir=refract(-V,nrm,1.0/ior);
-        vec3 s=field(uv+rdir.xy*disp);
-        vec3 w=vec3(smoothstep(1.0,0.0,abs(f-0.0)),smoothstep(0.6,0.0,abs(f-0.5)),smoothstep(1.0,0.0,abs(f-1.0)));
-        glass+=s*w; wsum+=w;
-      }
-      glass/=max(wsum,vec3(0.001)); glass*=1.08;
-      vec2 iuv=uv*2.4+nrm.xy*1.6+vec2(uTime*0.10,-uTime*0.07);
-      float ca1=fbm(iuv); float ca2=fbm(iuv*1.9+ca1*1.4-uTime*0.05);
-      float caustic=pow(max(ca2,0.0),2.2)*(0.30+0.70*z);
-      glass+=pal(0.54)*caustic*0.55;
-      float fres=pow(1.0-ndv,3.4);
-      glass+=fres*pal(0.60+uTime*0.02)*0.55;
-      vec3 L=normalize(vec3(0.40,0.72,0.85));
-      vec3 H=normalize(L+V);
-      float ndh=max(dot(nrm,H),0.0);
-      glass+=pow(ndh,120.0)*vec3(0.95,0.98,1.10)*0.70;
-      glass+=pow(ndh,24.0)*vec3(0.55,0.62,0.85)*0.18;
-      /* moving specular streak — slow sheen sweeping the orb face */
-      glass+=smoothstep(0.05,0.0,abs(pp.x*0.7+pp.y-0.9*sin(uTime*0.12)))*vec3(0.85,0.90,1.05)*0.18*z;
-      glass*=mix(vec3(0.78,0.86,1.06),vec3(1.0),z);
-      float edge=smoothstep(R,R-0.018,d);
-      col=mix(bg,glass,edge);
-      col+=smoothstep(0.022,0.0,abs(d-R))*0.14*pal(0.62);
+  float n = fbm3( q + 1.55*w + curl3*0.13 + t*0.4 );
+  vec3 col = mix( pal(0.44 + n*0.16), pal(0.58 + n*0.10), clamp(stream3,0.0,1.0) );
+  col *= (0.15 + 0.55*n);
+  vec2 c1=vec2(0.55+0.30*sin(t*1.2),0.30*cos(t*1.05));
+  vec2 c2=vec2(-0.10-0.30*cos(t*0.8),-0.28*sin(t*1.3));
+  col+=pal(0.58)*(0.10/(0.10+dot(uv-c1,uv-c1)))*0.22;
+  col+=pal(0.62)*(0.08/(0.08+dot(uv-c2,uv-c2)))*0.13;
+  col=mix(vec3(0.006,0.009,0.020),col,clamp(0.30+0.62*n,0.0,1.0));
+  return col;
+}
+
+// === minimal AgX (Sobotka) display transform: preserves cold hue through rolloff ===
+vec3 agxContrast(vec3 x){
+  vec3 x2=x*x; vec3 x4=x2*x2;
+  return +15.5*x4*x2 -40.14*x4*x +31.96*x4 -6.868*x2*x +0.4298*x2 +0.1191*x -0.00232;
+}
+vec3 agx(vec3 val){
+  const mat3 agx_mat=mat3(
+    0.842479062253094,0.0784335999999992,0.0792237451477643,
+    0.0423282422610123,0.878468636469772,0.0791661274605434,
+    0.0423756549057051,0.0784336,0.879142973793104);
+  const float mn=-12.47393;
+  const float mx=4.026069;
+  val=agx_mat*max(val,0.0);
+  val=clamp(log2(max(val,1e-10)),mn,mx);
+  val=(val-mn)/(mx-mn);
+  return agxContrast(val);
+}
+vec3 agxEotf(vec3 val){
+  const mat3 agx_inv=mat3(
+     1.19687900512017,-0.0980208811401368,-0.0990297440797205,
+    -0.0528968517574562,1.15190312990417,-0.0989611768448433,
+    -0.0529716355144438,-0.0980434501171241,1.15107367264116);
+  val=agx_inv*val;
+  return pow(max(val,0.0),vec3(2.2));
+}
+vec3 agxTonemap(vec3 c){ return agxEotf(agx(c)); }
+
+// === soft-knee dual-ring golden-angle (Vogel) bloom ===
+vec3 brightKnee(vec3 c){
+  float b=max(max(c.r,c.g),c.b);
+  float kn=max(0.18,1e-4);
+  float soft=clamp(b-0.42+kn,0.0,2.0*kn);
+  soft=soft*soft/(4.0*kn);
+  float contrib=max(soft,b-0.42);
+  contrib=max(contrib,0.0)/max(b,1e-4);
+  return c*contrib;
+}
+vec3 bloomSample(vec2 uv){
+  vec3 acc=vec3(0.0); float wsum=0.0;
+  const float GA=2.39996323;
+  for(int i=0;i<12;i++){
+    if(uQuality<0.5 && (i==1||i==4||i==7||i==10)) continue;  // 12->8 on lite
+    float fi=float(i);
+    float f=(fi+0.5)/12.0;
+    float ang=fi*GA;
+    float rad=(mod(fi,2.0)<0.5 ? 0.030 : 0.075)*sqrt(f);
+    vec2 o=vec2(cos(ang),sin(ang))*rad;
+    float wt=exp(-2.0*f);
+    acc+=brightKnee(field3(uv+o))*wt;
+    wsum+=wt;
+  }
+  return acc/max(wsum,1e-4);
+}
+
+// === surface micro-character: cheap finite-difference height (2-octave grain + faint facets) ===
+float bumpH(vec2 q){
+  float micro = 0.6*noise(q) + 0.4*noise(q*2.03+11.7);    // hand-blown grain
+  if(uQuality<0.5) return micro;                           // lite: drop facet tap
+  vec2 cq = q*0.34 + 7.3;
+  float cellv = noise(cq);                                 // coarse cell field (1 extra tap)
+  float facet = (cellv-0.5);                               // signed, broad shallow facets
+  return micro*0.78 + facet*0.5;
+}
+
+void main(){
+  vec2 frag=gl_FragCoord.xy;
+  vec2 uv=(frag*2.0-uRes)/uRes.y;
+  // subtle barrel lens bow (propagates into every sample below)
+  float rb=dot(uv,uv);
+  uv*=1.0+uBarrel*rb;
+  vec2 px=frag/uRes;
+  vec2 m=(uMouse*2.0-1.0); m.x*=uRes.x/uRes.y;
+
+  // --- edge-increasing radial chromatic aberration (normalized dir, center-clean) ---
+  float r2=dot(uv,uv);
+  vec2 cadir=uv*inversesqrt(max(r2,1e-6));
+  float caMag=uCA*smoothstep(0.0,1.0,r2)*r2;
+  caMag=min(caMag,0.012);
+  vec2 ca=cadir*caMag;
+  vec3 bg;
+  bg.r=field(uv+ca).r;
+  bg.g=field(uv).g;
+  bg.b=field(uv-ca).b;
+  vec3 col=bg;
+
+  // --- idle float / breathe, suppressed on engagement ---
+  vec2 mc=m;
+  float engage=smoothstep(0.06,0.42,length(mc));
+  float idle=1.0-engage;
+  vec2 floatOff=vec2(sin(uTime*0.46),sin(uTime*0.37+1.7))*0.018*idle;
+  float breathe=1.0+0.012*sin(uTime*0.55)*idle;
+
+  // --- orb geometry (hoisted so bloom gate can read d/R) ---
+  vec2 ctr=vec2(0.42,0.0)+m*0.16+floatOff;
+  float R=0.60*breathe*(1.0-0.10*uScroll);
+  vec2 pp=uv-ctr; float d=length(pp);
+
+  // ===== BACKLIGHT CORONA + RADIAL SHAFTS (analytic; orb is its own occluder) =====
+  // writes col only for d>=R (outside gate), so the if(d<R) orb draw overwrites cleanly.
+  {
+    float g = d - R;                                   // signed distance outside silhouette
+    float outside = smoothstep(R-0.012, R+0.020, d);   // 0 inside orb, 1 just outside
+    float tight = exp(-max(g,0.0)*9.0);                // bright ring fused to the rim
+    float wide  = exp(-max(g,0.0)*2.55);               // soft outer halo
+    vec2 ldRaw = vec2(-0.45,0.18) + m*0.6; vec2 ldir = ldRaw*inversesqrt(max(dot(ldRaw,ldRaw),1e-8));   // light sits behind-left, nudged by pointer (floored normalize)
+    float side = 0.62 + 0.38*dot(normalize(pp + 1e-4), ldir);
+    float aa = atan(pp.y, pp.x);
+    float breath = 0.85 + 0.15*sin(aa*3.0 + uTime*0.5*uReduce);   // slow analytic breathing
+    float corona = outside * (tight*0.85 + wide*0.42) * side * breath;
+    float coronaLeft = mix(1.0, 1.0 - 0.85*smoothstep(0.46,0.06,px.x), uLeftBias);
+    corona *= coronaLeft * (1.0 - 0.80*uScroll);
+    vec3 coronaCol = mix(pal(0.58), vec3(0.55,0.72,1.12), tight); // cold: deep blue glow -> icy ring
+    col += coronaCol * corona * uCorona;
+    // --- closed-form volumetric radial shafts (brightest at rim, decay outward) ---
+    float radDecay = exp(-max(g,0.0)*1.9) * outside;
+    float phase = aa + (uMouse.x-0.5)*2.0 + uTime*0.06*uReduce;    // steerable + drift
+    float strk = 0.5 + 0.5*sin(phase*9.0);
+    float hiFade = smoothstep(R+0.02, R+0.14, d);   // fade sharp lobe off the rim where angular sampling is worst
+    strk = pow(strk, 5.0) + 0.5*hiFade*pow(0.5+0.5*sin(phase*15.0 + 1.3), 7.0);
+    float shaftN = (uQuality>0.5) ? fbm3(vec2(aa*2.2, d*3.0) + vec2(uTime*0.05*uReduce, 0.0)) : 0.6;
+    float shafts = strk * (0.45 + 0.75*shaftN) * radDecay;
+    shafts *= coronaLeft * (1.0 - 0.85*uScroll);
+    col += pal(0.56) * shafts * 0.34 * uCorona;
+  }
+
+  if(d<R){
+    float z=sqrt(max(R*R-d*d,0.0))/R;
+    // pointer-tilted normal so refraction/highlights track the cursor
+    vec2 mTilt=m;
+    vec3 nrm=vec3(pp/R,z);
+    nrm=nrm+vec3(mTilt*0.16*(1.0-z*0.5),0.0);
+    nrm=nrm/sqrt(max(dot(nrm,nrm),1e-8));            // SAFE normalize
+    vec3 V=vec3(0.0,0.0,1.0);
+    float ndv=max(dot(nrm,V),0.0);
+
+    // ---- SURFACE CHARACTER: finite-difference bump on sphere-surface coords ----
+    // perturbs the SHARED front normal once so dispersion / env-refl / film / specular all ride it.
+    {
+      float bSc = 5.5;
+      vec2  bDrift = vec2(uTime*0.030, uTime*0.022);     // slow drift, never crawls
+      vec2  sc = nrm.xy*bSc + bDrift;
+      float he = 0.0015 + 0.5*bSc*1e-3;                  // finite-diff step (>0 by construction)
+      float h0 = bumpH(sc);
+      float hx = bumpH(sc+vec2(he,0.0));
+      float hy = bumpH(sc+vec2(0.0,he));
+      if(uQuality<0.5){ hy = hx; }                       // lite: isotropic estimate, skip hy tap
+      vec2  grad = vec2(hx-h0, hy-h0)/he;                // tangent-plane slope (he>0, NaN-safe)
+      vec3  gN = vec3(grad, 0.0);
+      gN = gN - dot(gN,nrm)*nrm;                         // McGuire surface-gradient projection
+      float bumpAmt = uBumpAmp * smoothstep(0.06,0.42,z);// fade to 0 at silhouette -> clean rim
+      nrm = nrm - gN*bumpAmt;
+      nrm = nrm/sqrt(max(dot(nrm,nrm),1e-8));            // SAFE normalize
+      ndv = max(dot(nrm,V),0.0);
     }
-    /* gate bloom to bright pixels — skip the 6 extra field() taps where the bg is dark */
-    float lb=dot(bg,vec3(0.299,0.587,0.114));
-    if(lb>0.16){ col+=bloomSample(uv)*0.9; }
-    float g=hash(frag+uTime*60.0)-0.5;
-    col+=g*0.040/max(uDPR,1.0);
-    col*=1.0-0.32*dot(uv*0.60,uv*0.60);
-    float leftMask=smoothstep(0.50,0.10,px.x)*uLeftBias;
-    float luma=dot(col,vec3(0.299,0.587,0.114));
-    col=mix(col,vec3(luma)*0.5,leftMask*0.55);
-    col*=1.0-0.45*leftMask;
-    col=aces(col*1.02);
-    col=pow(max(col,0.0),vec3(0.95));
-    gl_FragColor=vec4(col,1.0);
-  }`;
+
+    // === TRUE two-surface analytic refraction + fused spectral dispersion (6 field3 taps) ===
+    // front hit P0 lies EXACTLY on the sphere => exit root collapses to t=-2*dot(P0,r1) (no discriminant).
+    float zsurf = sqrt(max(R*R - d*d, 0.0));             // SAFE: clamped >=0
+    vec3 P0 = vec3(pp, zsurf);                            // |P0| == R exactly
+    vec3 Nf = nrm;                                        // pointer-tilted, bump-perturbed front normal
+    float thick=z;
+    float dispMag=uGlassDisp*(0.65+0.55*(1.0-thick));
+    vec3 glass=vec3(0.0); vec3 wsum=vec3(0.0);
+    for(int i=0;i<6;i++){
+      if(uQuality<0.5 && (i==1||i==3||i==5)) continue;   // 6->3 on lite
+      float f=float(i)/5.0;
+      float slide=f*uDispSpread;
+      float ior=mix(1.42,1.62,f)+slide;                  // per-wavelength IOR
+      float eta=1.0/ior;
+      // front face: bend view ray INTO the glass
+      vec3 r1 = refract(-V, Nf, eta);
+      if(dot(r1,r1) < 1e-5){ r1 = reflect(-V, Nf); }     // TIR / degenerate guard at entry
+      r1 = r1*inversesqrt(max(dot(r1,r1),1e-8));
+      // closed-form SECOND intersection: exit t = -2*dot(P0,r1) (P0 on sphere)
+      float tExit = max(-2.0*dot(P0, r1), 0.0);          // >=0 guard
+      vec3 P1 = P0 + r1*tExit;                           // exact exit point
+      vec3 Nb = P1*(1.0/max(R,1e-4));                    // outward exit normal (|P1|=R -> unit)
+      // back face: bend exit ray OUT of the glass
+      vec3 r2 = refract(r1, -Nb, ior);                   // denser->rarer
+      if(dot(r2,r2) < 1e-5){ r2 = reflect(r1, Nb); }     // TIR at exit -> internal reflection hint
+      r2 = r2*inversesqrt(max(dot(r2,r2),1e-8));
+      // sample the field along the TRUE exit ray; P1.xy carries real lensing/magnification
+      vec2 jit=(vec2(ign(gl_FragCoord.xy+f*37.0),ign(gl_FragCoord.yx-f*19.0))-0.5);
+      vec2 suv = ctr + P1.xy + r2.xy*dispMag + jit*uFrost*0.012;
+      vec3 s=field3(suv);
+      vec3 wsp=vec3(smoothstep(0.55,0.0,f),
+                    smoothstep(0.0,0.5,f)*smoothstep(1.0,0.5,f),
+                    smoothstep(0.45,1.0,f));
+      glass+=s*wsp; wsum+=wsp;
+    }
+    glass/=max(wsum,vec3(0.001));
+    glass*=1.06;
+
+    // --- front-face environment reflection (1 field3 tap, rim-gated) ---
+    float frw=pow(1.0-ndv,4.0);
+    if(frw>0.04){
+      vec3 rfl=reflect(-V,nrm);
+      vec3 envCol=field3(uv+rfl.xy*uEnvReflAmt);
+      glass=mix(glass,glass+envCol*1.15,clamp(frw*uEnvReflStr,0.0,0.85));
+    }
+
+    // --- internal caustics + TIR dense-core hint (fbm only, no field taps) ---
+    vec2 iuv=uv*2.4+nrm.xy*1.7+vec2(uTime*0.10,-uTime*0.07);
+    float c1n=fbm(iuv);
+    float c2n=fbm(iuv*1.95+c1n*1.5-uTime*0.05);
+    float ridge=1.0-abs(2.0*c2n-1.0);
+    float caustic=pow(max(ridge,0.0),3.0)*(0.25+0.75*z);
+    caustic+=pow(max(c1n,0.0),2.4)*0.18;
+    glass+=pal(0.54)*caustic*0.60;
+    // analytic internal-bounce crystal hint (green/mid wavelength recompute, 0 field/noise taps)
+    float core=pow(max(z,0.0),4.0)*(0.45+0.55*fbm(nrm.xy*3.0+uTime*0.06));
+    if(uQuality>0.5){
+      vec3 rg = refract(-V, Nf, 1.0/1.52);
+      if(dot(rg,rg) < 1e-5){ rg = reflect(-V, Nf); }
+      rg = rg*inversesqrt(max(dot(rg,rg),1e-8));
+      float tg = max(-2.0*dot(P0, rg), 0.0);
+      vec3 Pg = P0 + rg*tg;
+      vec3 Ng = Pg*(1.0/max(R,1e-4));
+      vec3 rBounce = reflect(rg, Ng);                    // internal reflection off back face
+      rBounce = rBounce*inversesqrt(max(dot(rBounce,rBounce),1e-8));
+      float tir = smoothstep(0.0, 0.35, -rBounce.z);     // strong where bounce heads back inward
+      core += pow(max(z,0.0),3.0) * tir * 0.45;          // denser, view-dependent inner glow
+    }
+    glass+=vec3(0.40,0.52,0.85)*core*uCoreGlow;          // SAME cold core literal (B=0.85 >> R=0.40)
+
+    // --- thin-film iridescent Fresnel rim (cold-locked cosine palette) ---
+    float fres=pow(1.0-ndv,3.6);
+    float opd=(1.0-ndv)*uFilmThick+0.04*uTime;
+    vec3 film=mix(vec3(0.42,0.60,0.95),vec3(0.58,0.50,0.96),0.5+0.5*sin(6.28318*opd));
+    film+=vec3(0.10,0.16,0.24)*pow(0.5+0.5*sin(12.56637*opd),2.0);
+    glass+=fres*film*0.62;
+    glass+=pow(1.0-ndv,8.0)*vec3(0.55,0.66,0.95)*0.30;
+
+    // --- COLD RIM BACKLIGHT (wrap-from-behind; same light dir as corona) ---
+    {
+      float rimB = pow(1.0 - ndv, 5.0);                  // grazing silhouette only
+      vec2 ldRaw = vec2(-0.45,0.18) + m*0.6; vec2 ldir = ldRaw*inversesqrt(max(dot(ldRaw,ldRaw),1e-8));   // SAME behind-light dir as corona (floored normalize)
+      float arc = 0.55 + 0.45*dot(normalize(pp + 1e-4), ldir);
+      float backlit = rimB * arc * (1.0 - 0.70*uScroll);
+      glass += vec3(0.42,0.60,1.05) * backlit * 0.55 * uCorona;  // cold icy backlight (B=1.05 > R=0.42)
+    }
+
+    // --- specular highlights + cold tint ---
+    vec3 L=vec3(0.40,0.72,0.85); L=L/sqrt(dot(L,L));
+    vec3 H=L+V; H=H/sqrt(max(dot(H,H),1e-8));
+    float ndh=max(dot(nrm,H),0.0);
+    glass+=pow(ndh,120.0)*vec3(0.78,0.92,1.18)*0.60;
+    glass+=pow(ndh,24.0)*vec3(0.55,0.62,0.85)*0.18;
+    glass+=smoothstep(0.05,0.0,abs(pp.x*0.7+pp.y-0.9*sin(uTime*0.12)))*vec3(0.85,0.90,1.05)*0.18*z;
+    glass*=mix(vec3(0.78,0.86,1.06),vec3(0.86,0.94,1.10),z);
+
+    float edge=smoothstep(R,R-0.018,d); col=mix(bg,glass,edge);
+    col+=smoothstep(0.022,0.0,abs(d-R))*0.14*pal(0.62);
+  }
+
+  // ===== FINISH-GRADE: GROUNDING (contact AO + shadow core behind the orb, 0 taps) =====
+  // background-only (step(R,d)); runs BEFORE bloom so the darkened ring isn't re-brightened.
+  {
+    float ao = smoothstep(R*1.34, R, d);                 // 1 far -> 0 at rim
+    ao = (1.0 - ao);                                     // 1 at rim -> 0 outside
+    ao *= smoothstep(R*0.90, R*1.34, d);                 // kill inside-orb & beyond ring
+    float shadowCore = smoothstep(R*1.12, R*0.40, d);
+    float ground = clamp(ao*0.55 + shadowCore*0.30, 0.0, 0.75);
+    ground *= step(R, d) * (1.0 - 0.45*uScroll);         // background only, ease on scroll
+    col *= (1.0 - ground*0.30);                          // scalar darken (hue-safe)
+  }
+
+  // ===== FINISH-GRADE: PROJECTED CAUSTIC RING (+1 noise tap, annulus-gated) =====
+  {
+    float annulus = smoothstep(R*1.05, R*1.18, d) * smoothstep(R*1.34, R*1.18, d);
+    if(uQuality>0.5 && annulus>0.002 && d>R){
+      float ang = atan(pp.y, pp.x);
+      float ripple = 0.5 + 0.5*sin(ang*16.0 - uTime*0.6);
+      float spk = noise(vec2(ang*7.0, d*22.0) + uTime*0.25);   // the one tap
+      float caus = pow(max(ripple,0.0), 3.0) * pow(max(spk,0.0), 4.0);
+      caus *= annulus * (1.0 - 0.7*uScroll) * smoothstep(0.10, 0.45, dot(bg,vec3(0.299,0.587,0.114)));
+      col += pal(0.60) * caus * 0.9;                      // cold glint accent (B>R)
+    }
+  }
+
+  // --- bloom: soft-knee self-gating, cull dark + orb interior, scroll-faded ---
+  float lb=dot(bg,vec3(0.299,0.587,0.114));
+  if(lb>0.12 && d>R){
+    col+=bloomSample(uv)*1.15*(1.0-0.65*uScroll);
+  }
+
+  // ===== FINISH-GRADE: free DEPTH PROXY (0 taps) -> drives DoF (bright/near = crisp) =====
+  float depthLuma = clamp(lb*2.4, 0.0, 1.0);              // bright field = near
+  float depthRad  = smoothstep(1.25, 0.15, r2);           // center = near
+  float depthN    = clamp(mix(depthRad, depthLuma, 0.55), 0.0, 1.0);
+  depthN = max(depthN, smoothstep(R+0.05, R-0.02, d));    // orb = crispest near element
+
+  // ===== FINISH-GRADE: fake DoF (depth-biased micro-contrast + aerial soften, 0 taps) =====
+  if(uQuality>0.5){
+    float farK = 1.0 - depthN;
+    float cl   = dot(col, vec3(0.299,0.587,0.114));
+    vec3  softFar = mix(col, vec3(cl), 0.22*farK);                  // de-bite far haze
+    softFar = mix(softFar, vec3(0.006,0.009,0.020), 0.10*farK*(1.0-uScroll)); // cold recession
+    vec3  crispNear = col + (col - vec3(cl))*0.10*depthN;           // hue-preserving micro-contrast
+    col = mix(softFar, crispNear, depthN);
+  }
+
+  // --- scroll dim + lens vignette ---
+  col*=mix(1.0,0.55,uScroll);
+  float vigR=length(uv)*0.62;
+  float vig=smoothstep(1.35,0.25,vigR);
+  col*=mix(0.55,1.0,vig*(1.0-0.35*uScroll));
+
+  // --- hero left contrast bias (keeps headline readable) ---
+  float leftMask=smoothstep(0.50,0.10,px.x)*uLeftBias;
+  float luma=dot(col,vec3(0.299,0.587,0.114));
+  col=mix(col,vec3(luma)*0.5,leftMask*0.55); col*=1.0-0.45*leftMask;
+
+  // ===== FINISH-GRADE: sub-AgX COLD POLISH (0 taps) — pre-tonemap so AgX carries the cold bias =====
+  vec3 graded = col*0.98;
+  {
+    float lum0 = dot(graded, vec3(0.299,0.587,0.114));
+    float midK = smoothstep(0.02, 0.20, lum0);             // spare deep shadows -> no blue-crush
+    graded.b *= 1.0 + 0.035*midK;                         // lift blue
+    graded.r *= 1.0 - 0.022*midK;                         // trim red
+    graded.g *= 1.0 + 0.006*midK;                         // hair of green (avoid magenta)
+  }
+  col = agxTonemap(graded);
+  col=clamp(col,0.0,1.0);
+  col=pow(max(col,0.0),vec3(0.95));
+
+  // --- NaN scrub (col!=col is true only for NaN) ---
+  col=(col==col)?col:vec3(0.0);
+
+  // --- IGN dither LAST, in display space, kills 8-bit banding ---
+  vec2 dcoord=frag+5.588238*uReduce*floor(mod(uTime*60.0,64.0));
+  float dN=ign(dcoord)-0.5;
+  col+=dN*(1.0/255.0);
+
+  gl_FragColor=vec4(col,1.0);
+}
+`;
 
   let prog, buf, loc, uRes, uTime, uMouse, uDPR, uLeftBias;
+  let uScroll,uReduce,uQuality,uGlassDisp,uDispSpread,uFilmThick,uCoreGlow,uEnvReflAmt,uEnvReflStr,uFrost,uCA,uBarrel;
+  let uBumpAmp,uCorona;
+  let scrollEased=0;
   function sh(t,s){ const o=gl.createShader(t); gl.shaderSource(o,s); gl.compileShader(o);
     if(!gl.getShaderParameter(o,gl.COMPILE_STATUS)) console.warn(gl.getShaderInfoLog(o)); return o; }
   let glReady=true;
@@ -619,6 +980,16 @@ var RM = matchMedia('(prefers-reduced-motion: reduce)');
     uRes=gl.getUniformLocation(prog,'uRes'); uTime=gl.getUniformLocation(prog,'uTime'); uMouse=gl.getUniformLocation(prog,'uMouse');
     uDPR=gl.getUniformLocation(prog,'uDPR'); uLeftBias=gl.getUniformLocation(prog,'uLeftBias');
     gl.uniform1f(uLeftBias, matchMedia('(max-width:860px)').matches?0.0:0.9);
+    uScroll=gl.getUniformLocation(prog,'uScroll'); uReduce=gl.getUniformLocation(prog,'uReduce'); uQuality=gl.getUniformLocation(prog,'uQuality');
+    uGlassDisp=gl.getUniformLocation(prog,'uGlassDisp'); uDispSpread=gl.getUniformLocation(prog,'uDispSpread'); uFilmThick=gl.getUniformLocation(prog,'uFilmThick');
+    uCoreGlow=gl.getUniformLocation(prog,'uCoreGlow'); uEnvReflAmt=gl.getUniformLocation(prog,'uEnvReflAmt'); uEnvReflStr=gl.getUniformLocation(prog,'uEnvReflStr');
+    uFrost=gl.getUniformLocation(prog,'uFrost'); uCA=gl.getUniformLocation(prog,'uCA'); uBarrel=gl.getUniformLocation(prog,'uBarrel');
+    uBumpAmp=gl.getUniformLocation(prog,'uBumpAmp'); uCorona=gl.getUniformLocation(prog,'uCorona');
+    gl.uniform1f(uReduce, RM.matches?0.0:1.0); gl.uniform1f(uQuality, 1.0);
+    gl.uniform1f(uGlassDisp, 0.22); gl.uniform1f(uDispSpread, 0.055); gl.uniform1f(uFilmThick, 3.0);
+    gl.uniform1f(uCoreGlow, 0.55); gl.uniform1f(uEnvReflAmt, 0.18); gl.uniform1f(uEnvReflStr, 0.65);
+    gl.uniform1f(uFrost, 0.0); gl.uniform1f(uCA, 0.003); gl.uniform1f(uBarrel, 0.02);
+    gl.uniform1f(uBumpAmp, 0.05); gl.uniform1f(uCorona, 0.85);
   }
   init();
 
@@ -626,7 +997,7 @@ var RM = matchMedia('(prefers-reduced-motion: reduce)');
   let DPR=Math.min(window.devicePixelRatio||1, coarse?1.25:1.75);
   if(matchMedia('(max-width:480px)').matches) DPR=Math.min(DPR,1.3);
   function resize(){ const w=innerWidth, h=innerHeight; canvas.width=w*DPR; canvas.height=h*DPR;
-    canvas.style.width=w+'px'; canvas.style.height=h+'px'; gl.viewport(0,0,canvas.width,canvas.height); }
+    canvas.style.width=w+'px'; canvas.style.height=h+'px'; gl.viewport(0,0,canvas.width,canvas.height); if(RM.matches && glReady){ draw(performance.now()); } }
   resize(); addEventListener('resize',resize);
 
   let mx=0.5,my=0.5,tx=0.5,ty=0.5;
@@ -634,20 +1005,21 @@ var RM = matchMedia('(prefers-reduced-motion: reduce)');
   addEventListener('touchmove',e=>{ if(e.touches[0]){ tx=e.touches[0].clientX/innerWidth; ty=1-e.touches[0].clientY/innerHeight; } },{passive:true});
 
   const t0=performance.now(); let raf=0, running=false;
-  let samples=0, acc=0, degraded=false;
+  let samples=0, acc=0, degraded=false, qStepped=false;
   function draw(now){
     mx+=(tx-mx)*0.05; my+=(ty-my)*0.05;
     gl.uniform2f(uRes,canvas.width,canvas.height);
-    gl.uniform1f(uTime,(now-t0)/1000);
+    gl.uniform1f(uTime, RM.matches?7.30:(now-t0)/1000);
     gl.uniform2f(uMouse,mx,my);
     gl.uniform1f(uDPR,DPR);
+    { const _h=innerHeight; const _t=Math.min((window.scrollY||0)/Math.max(_h,1),1); scrollEased+=(_t-scrollEased)*0.08; gl.uniform1f(uScroll, scrollEased); }
     gl.drawArrays(gl.TRIANGLES,0,3);
   }
   let lastT=performance.now();
   function frame(now){ if(!running || gl.isContextLost()){ return; }
     const dt=now-lastT; lastT=now;
     draw(now);
-    if(!degraded){ acc+=dt; if(++samples>=60){ if(acc/60>28 && DPR>1){ DPR=Math.max(1,DPR-0.5); resize(); } degraded=true; } }
+    if(!degraded){ acc+=dt; if(++samples>=60){ const avg=acc/60; if(avg>28){ if(!qStepped){ qStepped=true; gl.uniform1f(uQuality, 0.0); } else if(DPR>1){ DPR=Math.max(1,DPR-0.5); resize(); degraded=true; } } else { degraded=true; } samples=0; acc=0; } }
     raf=requestAnimationFrame(frame);
   }
   function start(){ if(running||!glReady) return; running=true; lastT=performance.now(); cancelAnimationFrame(raf); raf=requestAnimationFrame(frame); }
