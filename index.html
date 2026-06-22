@@ -38,7 +38,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300&family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet" />
 
 <!-- No-JS failsafe: reveal everything if JS is disabled -->
 <noscript><style>.reveal{opacity:1!important;transform:none!important}</style></noscript>
@@ -75,7 +75,8 @@
     --bg-2:#efede7;          /* greige — alt sections / inset grids / cards */
     --ink:#191b1b;           /* primary near-black text (16.5:1 on cream) */
     --dim:#51544f;           /* muted warm gray body-secondary (7.35:1 on cream — AA/AAA) */
-    --faint:#767972;         /* faint warm gray for meta/eyebrows/nums (4.23:1 — AA large/decorative) */
+    --faint:#5f625c;         /* darkened prose-meta gray (5.30:1 cream / 4.74:1 greige — AA prose) */
+    --label:#767972;         /* lighter token — ONLY for tracked uppercase micro-labels (decorative) */
     --line:rgba(25,27,27,.12);   /* dark-on-light hairline */
     --line-2:rgba(25,27,27,.07); /* fainter hairline / inset-grid gaps */
     --glass:rgba(255,255,255,.55);  /* light glass card fill over cream */
@@ -91,30 +92,37 @@
     /* legacy g1/g2/g3 kept as aliases so existing rules resolve; remapped deep */
     --g1:var(--indigo); --g2:var(--blue); --g3:var(--indigo);
     --on-ink:#fbfaf4;  /* text/icon color when sitting on a solid ink fill */
+    /* type-scale + measure tokens */
+    --ease-out:cubic-bezier(.16,1,.3,1);
+    --measure:66ch;
   }
   html{ scroll-behavior:smooth; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; background:var(--bg); }
   body{
     background:var(--bg); color:var(--ink);
     font-family:"Inter","PingFang SC","Hiragino Sans GB",-apple-system,sans-serif;
     line-height:1.55; overflow-x:hidden;
-    cursor:none;
   }
-  @media (max-width:860px){ body{ cursor:auto; } }
+  /* cursor:none only enabled once the custom cursor IIFE has bound (fallback if JS fails) */
+  html.cur-on body{ cursor:none; }
+  @media (max-width:860px){ html.cur-on body{ cursor:auto; } }
   a{ color:inherit; text-decoration:none; }
   ::selection{ background:rgba(94,83,227,.22); color:var(--ink); }
 
   /* ---------- focus-visible (keyboard) ---------- */
   a:focus-visible, .btn:focus-visible, .nav-cta:focus-visible, .card:focus-visible,
-  .clink:focus-visible, .burger:focus-visible, .skip:focus-visible{
+  .clink:focus-visible, .burger:focus-visible, .skip:focus-visible, #main:focus-visible{
     outline:2px solid var(--indigo); outline-offset:3px; border-radius:6px;
   }
+  #main:focus-visible{ outline:none; }
   .card:focus-visible{ outline-offset:4px; }
 
   /* ---------- skip link ---------- */
   .skip{ position:fixed; top:10px; left:10px; z-index:200; transform:translateY(-160%);
     background:var(--ink); color:var(--on-ink); padding:10px 16px; border-radius:99px; font-size:14px;
-    font-weight:500; transition:transform .25s cubic-bezier(.2,.8,.2,1); }
+    font-weight:500; transition:transform .25s var(--ease-out); }
   .skip:focus{ transform:none; }
+  .vh{ position:absolute!important; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden;
+    clip:rect(0 0 0 0); white-space:nowrap; border:0; }
 
   /* ---------- WebGL canvas ---------- */
   #gl{ position:fixed; inset:0; width:100%; height:100%; z-index:-2; display:block; }
@@ -130,19 +138,28 @@
   .cur, .cur-d{ position:fixed; top:0; left:0; border-radius:50%; pointer-events:none; z-index:9999;
     transform:translate(-50%,-50%); }
   .cur{ width:34px; height:34px; border:1px solid rgba(25,27,27,.55); mix-blend-mode:multiply; background:transparent;
-    transition:width .25s cubic-bezier(.2,.8,.2,1), height .25s cubic-bezier(.2,.8,.2,1), background .25s, border-color .25s; }
+    transition:width .25s var(--ease-out), height .25s var(--ease-out), background .25s, border-color .25s; }
   .cur-d{ width:5px; height:5px; background:var(--ink); box-shadow:0 0 0 1px rgba(255,255,255,.55); mix-blend-mode:normal; }
   .cur.grow{ width:64px; height:64px; background:rgba(25,27,27,.06); border-color:transparent; }
+  .cur.text{ width:3px; height:30px; border-radius:2px; border-color:transparent; background:rgba(25,27,27,.42); }
+  .cur.press{ width:24px; height:24px; background:rgba(25,27,27,.10); border-color:transparent; }
   @media (max-width:860px){ .cur,.cur-d{ display:none; } }
 
   /* ---------- intro curtain ---------- */
-  #intro{ position:fixed; inset:0; z-index:9998; background:var(--bg); color:var(--ink); display:flex; gap:.4em;
-    align-items:center; justify-content:center; font-family:"Fraunces","PingFang SC",serif; font-weight:300;
-    font-size:clamp(34px,7vw,72px); letter-spacing:.02em; transition:transform 1s cubic-bezier(.7,0,.2,1); }
+  #intro{ position:fixed; inset:0; z-index:9998; background:var(--bg); color:var(--ink); display:flex;
+    flex-direction:column; align-items:center; justify-content:center; gap:.18em;
+    font-family:"Fraunces","PingFang SC",serif; font-weight:300;
+    font-size:clamp(34px,7vw,72px); letter-spacing:.02em; transition:transform 1.05s cubic-bezier(.76,0,.24,1); }
   #intro.up{ transform:translateY(-101%); }
-  #intro .il{ opacity:0; transform:translateY(20px); animation:ilin .8s cubic-bezier(.2,.8,.2,1) forwards; }
-  #intro .il:nth-child(2){ animation-delay:.12s; color:var(--dim); }
-  @keyframes ilin{ to{ opacity:1; transform:none; } }
+  #intro .iwords{ display:flex; gap:.4em; align-items:baseline; overflow:hidden; }
+  #intro .il{ display:inline-block; transform:translateY(108%);
+    animation:ilwipe .9s cubic-bezier(.16,1,.3,1) forwards; }
+  #intro .il:nth-child(2){ animation-delay:.14s; color:var(--dim); }
+  #intro .irule{ height:1px; width:clamp(80px,18vw,200px); margin-top:.34em;
+    background:linear-gradient(90deg,var(--indigo),var(--blue),transparent);
+    transform:scaleX(0); transform-origin:0 50%; animation:irule .9s .5s cubic-bezier(.16,1,.3,1) forwards; }
+  @keyframes ilwipe{ to{ transform:none; } }
+  @keyframes irule{ to{ transform:scaleX(1); } }
 
   /* ---------- layout ---------- */
   .wrap{ width:min(1180px, 90vw); margin:0 auto; }
@@ -161,16 +178,22 @@
   .brand .dot{ width:7px; height:7px; border-radius:50%; background:linear-gradient(120deg,var(--indigo),var(--blue)); box-shadow:0 0 10px rgba(94,83,227,.35); }
   .nav-links{ display:flex; gap:34px; align-items:center; font-size:13.5px; color:var(--dim); }
   .nav-links a{ position:relative; transition:color .3s; }
-  .nav-links a::after{ content:""; position:absolute; left:0; bottom:-5px; width:0; height:1px; background:var(--ink); transition:width .35s cubic-bezier(.2,.8,.2,1); }
-  .nav-links a:hover{ color:var(--ink); } .nav-links a:hover::after{ width:100%; }
+  .nav-links a::after{ content:""; position:absolute; left:0; bottom:-5px; width:100%; height:1px; background:var(--ink);
+    transform:scaleX(0); transform-origin:0 50%; transition:transform .4s var(--ease-out); }
+  .nav-links a:hover{ color:var(--ink); }
+  .nav-links a:not(:hover)::after{ transform-origin:100% 50%; }
+  .nav-links a:hover::after, .nav-links a:focus-visible::after{ transform:scaleX(1); }
+  .nav-links a.active{ color:var(--ink); }
+  .nav-links a.active::after{ transform:scaleX(1); transform-origin:0 50%; background:linear-gradient(90deg,var(--indigo),var(--blue)); }
   .nav-cta{ border:1px solid var(--line); border-radius:99px; padding:8px 18px; color:var(--ink);
     font-size:13px; transition:all .3s; }
+  .nav-cta::after{ display:none; }
   .nav-cta:hover{ background:var(--ink); color:var(--on-ink); border-color:var(--ink); }
   .burger{ display:none; }
   @media (max-width:860px){
     .nav-links{ display:none; }
     .nav-links.open{ display:flex; position:fixed; inset:0; z-index:100; flex-direction:column; justify-content:center; align-items:center;
-      gap:30px; font-size:24px; background:rgba(251,250,244,.97); backdrop-filter:blur(18px); }
+      gap:30px; font-size:24px; background:#fbfaf4; }
     .burger{ display:block; z-index:101; width:30px; height:18px; position:relative; cursor:pointer;
       padding:13px; margin:-13px; box-sizing:content-box; background:none; border:0; }
     .burger span{ position:absolute; left:13px; width:30px; height:1.5px; background:var(--ink); transition:.35s; }
@@ -180,40 +203,42 @@
     .burger.x span:nth-child(3){ top:21px; transform:rotate(-45deg); }
   }
 
-  /* ---------- hero ---------- */
-  header.hero{ min-height:100vh; min-height:100svh; display:flex; flex-direction:column; justify-content:center;
-    padding:120px max(28px,5vw) 90px; position:relative; }
+  /* ---------- hero (haoqi asymmetry: text column left, orb breathes on the right) ---------- */
+  header.hero{ min-height:100vh; min-height:100svh; display:flex; flex-direction:column; justify-content:flex-end;
+    padding:120px max(28px,5vw) clamp(96px,12vh,150px); position:relative; }
   /* localized contrast floor for the left text column — cream-to-transparent so dark ink headline reads over the light field */
   header.hero::before{ content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
-    background:linear-gradient(100deg, rgba(251,250,244,.72) 0%, rgba(251,250,244,.38) 45%, transparent 72%); }
-  .hero .wrap{ position:relative; max-width:min(820px,72vw); margin-left:0; }
+    background:linear-gradient(100deg, rgba(251,250,244,.62) 0%, rgba(251,250,244,.30) 44%, transparent 68%); }
+  /* scroll-linked cream wash toward the page as the hero rises */
+  header.hero::after{ content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
+    background:linear-gradient(180deg, transparent 60%, var(--bg) 100%);
+    opacity:var(--hero-scroll,0); transition:opacity .2s linear; }
+  .hero .wrap{ position:relative; max-width:min(680px,58vw); margin-left:0; }
   .hero .eyebrow{ font-family:"Space Grotesk",sans-serif; font-size:12px; letter-spacing:.42em; text-transform:uppercase;
-    color:var(--faint); display:flex; align-items:center; gap:14px; }
+    color:var(--label); display:flex; align-items:center; gap:14px; }
   .hero .eyebrow::before{ content:""; width:40px; height:1px; background:linear-gradient(90deg,var(--indigo),transparent); flex:none; }
-  .hero h1{ font-family:"Fraunces",serif; font-weight:300; line-height:.86;
-    font-size:clamp(72px, 15vw, 220px); letter-spacing:-.035em; margin:26px 0 6px; margin-left:-.03em; }
-  .hero h1 .cn{ display:block; font-family:"Fraunces","PingFang SC",serif; font-weight:300; color:var(--ink); }
-  .hero h1 .en{ display:block;
-    background:linear-gradient(180deg,#2a2c2c 0%,var(--indigo) 100%);
-    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
-    font-style:normal; font-weight:300; font-size:.40em; letter-spacing:.005em; margin-top:.06em; }
+  .hero h1{ font-family:"Fraunces",serif; font-optical-sizing:auto; font-weight:400; line-height:.86;
+    font-size:clamp(72px, 14vw, 210px); letter-spacing:-.045em; margin:26px 0 6px; margin-left:-.03em; }
+  .hero h1 .cn{ display:block; font-family:"Fraunces","PingFang SC",serif; font-weight:400; color:var(--ink); letter-spacing:0; }
+  .hero h1 .en{ display:block; color:var(--ink);
+    font-style:normal; font-weight:400; font-size:.40em; letter-spacing:-.02em; margin-top:.06em; }
   .hero .role{ font-family:"Space Grotesk",sans-serif; font-size:clamp(15px,2.1vw,22px); color:var(--ink);
     font-weight:400; margin-top:30px; letter-spacing:.01em; }
   .hero .role b{ font-weight:500; }
   .hero .sub{ max-width:540px; color:var(--dim); font-size:clamp(14.5px,1.6vw,17px); margin-top:18px; }
-  .hero .sub .cn{ display:block; color:var(--faint); font-size:.92em; margin-top:8px; }
+  .hero .sub .cn{ display:block; color:var(--faint); font-size:.92em; margin-top:8px; letter-spacing:0; }
   .hero .cta-row{ display:flex; gap:16px; margin-top:42px; flex-wrap:wrap; }
   .btn{ display:inline-flex; align-items:center; gap:10px; padding:14px 26px; border-radius:99px; font-size:14.5px;
-    font-weight:500; transition:background .35s cubic-bezier(.2,.8,.2,1), border-color .35s, box-shadow .35s, color .35s;
-    transform:translate(var(--mtx,0px), calc(var(--mty,0px) + var(--lift,0px))); will-change:transform; }
+    font-weight:500; transition:background .35s var(--ease-out), border-color .35s, box-shadow .35s, color .35s;
+    transform:translate(var(--mtx,0px), calc(var(--mty,0px) + var(--lift,0px))); }
   .btn.solid{ background:var(--ink); color:var(--on-ink); }
-  .btn.solid:hover{ --lift:-2px; box-shadow:0 14px 38px -16px rgba(25,27,27,.45), 0 0 0 1px rgba(94,83,227,.22); }
+  .btn.solid:hover{ --lift:-2px; will-change:transform; box-shadow:0 14px 38px -16px rgba(25,27,27,.45), 0 0 0 1px rgba(94,83,227,.22); }
   .btn.ghost{ border:1px solid var(--line); color:var(--ink); }
-  .btn.ghost:hover{ --lift:-2px; border-color:var(--ink); background:var(--glass-2); }
+  .btn.ghost:hover{ --lift:-2px; will-change:transform; border-color:var(--ink); background:var(--glass-2); }
   .btn .arr{ transition:transform .35s; }
   .btn:hover .arr{ transform:translate(4px,-4px); }
   .scroll-hint{ position:absolute; bottom:max(34px, calc(env(safe-area-inset-bottom) + 18px)); left:max(28px,5vw); transform:none;
-    font-family:"Space Grotesk",sans-serif; font-size:11px; letter-spacing:.3em; text-transform:uppercase; color:var(--faint);
+    font-family:"Space Grotesk",sans-serif; font-size:11px; letter-spacing:.3em; text-transform:uppercase; color:var(--label);
     display:flex; flex-direction:column; align-items:center; gap:10px; }
   .scroll-hint .line{ width:1px; height:48px; background:linear-gradient(var(--dim),transparent); position:relative; overflow:hidden; }
   .scroll-hint .line::after{ content:""; position:absolute; top:-50%; left:0; width:100%; height:50%; background:var(--ink);
@@ -228,30 +253,31 @@
   section.panel{ padding:clamp(80px,11vw,150px) 0; }
   #about{ padding-top:clamp(120px,16vw,220px); }
   .sec-head{ display:flex; flex-direction:column; align-items:flex-start; gap:14px;
-    margin-bottom:clamp(56px,7vw,88px); padding-bottom:22px; border-bottom:1px solid var(--line-2); }
-  .sec-num{ font-family:"Space Grotesk",sans-serif; font-size:12px; color:var(--faint);
+    margin-bottom:clamp(56px,7vw,88px); padding-bottom:24px;
+    border-bottom:1px solid var(--line-2);
+    border-image:linear-gradient(90deg,rgba(94,83,227,.30),rgba(141,203,255,.22),transparent 70%) 1; }
+  .sec-num{ font-family:"Space Grotesk",sans-serif; font-size:12px; color:var(--label);
     letter-spacing:.32em; text-transform:uppercase; }
-  .sec-title{ font-family:"Fraunces",serif; font-weight:300; font-size:clamp(34px,5.2vw,60px); line-height:1.02; letter-spacing:-.01em; color:var(--ink); }
-  .sec-title .cn{ font-family:"Fraunces","PingFang SC",serif; color:var(--faint); font-size:.4em; font-style:italic; margin-left:14px; }
+  .sec-title{ font-family:"Fraunces",serif; font-optical-sizing:auto; font-weight:400; font-size:clamp(34px,5.2vw,60px); line-height:1.02; letter-spacing:-.03em; color:var(--ink); }
+  .sec-title .cn{ font-family:"Fraunces","PingFang SC",serif; color:var(--faint); font-size:.4em; font-style:normal; margin-left:14px; letter-spacing:0; }
 
   /* ---------- about ---------- */
   .about-grid{ display:grid; grid-template-columns:1.55fr .9fr; gap:clamp(48px,7vw,96px); align-items:start; }
-  .about-lead{ font-family:"Fraunces",serif; font-weight:300; font-size:clamp(22px,2.8vw,32px); line-height:1.4; letter-spacing:-.01em; color:var(--ink); }
+  .about-lead{ font-family:"Fraunces",serif; font-optical-sizing:auto; font-weight:300; font-size:clamp(22px,2.8vw,32px); line-height:1.4; letter-spacing:-.015em; color:var(--ink); max-width:24ch; }
   .about-lead .hl{ color:var(--indigo); -webkit-text-fill-color:var(--indigo); font-style:italic; }
-  .about-body{ color:var(--dim); font-size:15.5px; line-height:1.7; letter-spacing:.005em; }
+  .about-body{ color:var(--dim); font-size:15.5px; line-height:1.7; letter-spacing:.005em; max-width:66ch; }
   .about-body p{ margin-bottom:16px; }
   .about-body .cn{ color:var(--faint); font-size:14.5px; }
   .stats{ display:grid; grid-template-columns:1fr 1fr; gap:1px; margin-top:14px; background:var(--line-2);
     border:1px solid var(--line-2); border-radius:16px; overflow:hidden; }
-  .stat{ background:rgba(255,255,255,.5); padding:22px 20px; }
-  .stat .n{ font-family:"Fraunces",serif; font-size:34px; font-weight:400;
-    background:linear-gradient(180deg,var(--ink),var(--indigo)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
-  .stat .l{ font-size:12.5px; color:var(--dim); margin-top:4px; letter-spacing:.02em; }
+  .stat{ background:rgba(255,255,255,.5); padding:26px 22px; }
+  .stat .n{ font-family:"Fraunces",serif; font-optical-sizing:auto; font-size:34px; font-weight:400; color:var(--ink); }
+  .stat .l{ font-size:12.5px; color:var(--faint); margin-top:4px; letter-spacing:.02em; }
 
   /* ---------- work ---------- */
-  .work-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:18px; }
+  .work-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:24px; }
   .card{ position:relative; border:1px solid var(--line); border-radius:20px; padding:30px 30px 26px;
-    background:var(--glass); box-shadow:var(--card-sh); overflow:hidden; transition:transform .5s cubic-bezier(.2,.8,.2,1), border-color .5s, background .5s, box-shadow .5s;
+    background:var(--glass); box-shadow:var(--card-sh); overflow:hidden; transition:transform .5s var(--ease-out), border-color .5s, background .5s, box-shadow .5s;
     display:flex; flex-direction:column; min-height:230px; }
   .card::before{ content:""; position:absolute; inset:0; border-radius:20px; padding:1px; opacity:0; transition:opacity .5s;
     background:linear-gradient(130deg,var(--peri),var(--sky),transparent 60%);
@@ -262,7 +288,7 @@
   .card:hover::before{ opacity:1; }
   .card:hover::after{ opacity:1; }
   .card .ct-top{ display:flex; align-items:center; justify-content:space-between; }
-  .card .ct-name{ font-family:"Space Grotesk",sans-serif; font-size:19px; font-weight:500; color:var(--ink); }
+  .card .ct-name{ font-family:"Space Grotesk",sans-serif; font-size:19px; font-weight:500; color:var(--ink); margin:0; }
   .card .ct-link{ font-size:12px; color:var(--faint); display:inline-flex; gap:6px; align-items:center; transition:color .3s; }
   .card:hover .ct-link{ color:var(--indigo); }
   .card .ct-desc{ color:var(--dim); font-size:14px; margin-top:14px; flex:1; }
@@ -273,14 +299,20 @@
     border-radius:99px; padding:3px 11px; letter-spacing:.02em; }
   .card.feat{ grid-column:span 2; min-height:auto; }
   .card.feat .ct-name{ font-size:22px; }
-  .repo-note{ text-align:center; margin-top:34px; color:var(--faint); font-size:13.5px; }
-  .repo-note a{ color:var(--blue); border-bottom:1px solid rgba(0,119,188,.35); }
+  .repo-note{ text-align:center; margin-top:40px; color:var(--faint); font-size:13.5px; }
+  .repo-note a{ color:var(--blue); background-image:linear-gradient(var(--blue),var(--blue));
+    background-size:0% 1px; background-position:0 100%; background-repeat:no-repeat;
+    transition:background-size .42s var(--ease-out), color .3s; }
+  .repo-note a:hover, .repo-note a:focus-visible{ background-size:100% 1px; }
 
-  /* ---------- capabilities ---------- */
-  .cap-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line-2);
-    border:1px solid var(--line-2); border-radius:20px; overflow:hidden; }
-  .cap{ background:rgba(255,255,255,.5); padding:30px 28px; transition:background .4s; }
-  .cap:hover{ background:var(--bg-2); }
+  /* ---------- capabilities (open cells + top-rules, rotating pastel index) ---------- */
+  .cap-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:clamp(2px,1.2vw,22px); }
+  .cap{ background:rgba(255,255,255,.5); padding:30px 26px 28px; border-radius:14px;
+    border-top:2px solid var(--cap-acc,var(--line)); transition:background .4s, transform .4s var(--ease-out); }
+  .cap:hover{ background:var(--bg-2); transform:translateY(-3px); }
+  .cap:nth-child(1){ --cap-acc:var(--mint); } .cap:nth-child(2){ --cap-acc:var(--sky); }
+  .cap:nth-child(3){ --cap-acc:var(--peri); } .cap:nth-child(4){ --cap-acc:var(--coral); }
+  .cap:nth-child(5){ --cap-acc:var(--gold); } .cap:nth-child(6){ --cap-acc:var(--indigo); }
   .cap .ci{ font-family:"Space Grotesk",sans-serif; font-size:12px; color:var(--indigo); letter-spacing:.1em; }
   .cap .ch{ font-size:17px; font-weight:500; margin:10px 0 6px; color:var(--ink); }
   .cap .ch .cn{ color:var(--faint); font-weight:400; font-size:13px; }
@@ -292,15 +324,19 @@
     background:var(--glass); box-shadow:var(--card-sh); text-align:center; position:relative; overflow:hidden; }
   .contact-card .glow{ position:absolute; width:420px; height:420px; border-radius:50%; top:-30%; left:50%; transform:translateX(-50%);
     background:radial-gradient(circle,rgba(94,83,227,.08),transparent 60%); pointer-events:none; }
-  .contact-h{ font-family:"Fraunces",serif; font-weight:300; font-size:clamp(30px,5vw,58px); letter-spacing:-.01em; position:relative; color:var(--ink); }
+  .contact-h{ font-family:"Fraunces",serif; font-optical-sizing:auto; font-weight:400; font-size:clamp(30px,5vw,58px); letter-spacing:-.03em; position:relative; color:var(--ink); }
   .contact-h .it{ font-style:italic; color:var(--indigo); -webkit-text-fill-color:var(--indigo); }
-  .contact-card p{ color:var(--dim); margin:18px auto 34px; max-width:460px; position:relative; }
+  .contact-card p{ color:var(--faint); margin:18px auto 34px; max-width:460px; position:relative; }
+  .contact-card p a{ color:var(--blue); background-image:linear-gradient(var(--blue),var(--blue));
+    background-size:0% 1px; background-position:0 100%; background-repeat:no-repeat;
+    transition:background-size .42s var(--ease-out), color .3s; }
+  .contact-card p a:hover, .contact-card p a:focus-visible{ background-size:100% 1px; }
   .contact-row{ display:flex; gap:14px; justify-content:center; flex-wrap:wrap; position:relative; }
   .clink{ display:inline-flex; align-items:center; gap:10px; border:1px solid var(--line); border-radius:99px;
     padding:13px 24px; font-size:14.5px; color:var(--ink);
     transition:background .35s, border-color .35s, color .35s, box-shadow .35s;
-    transform:translate(var(--mtx,0px), calc(var(--mty,0px) + var(--lift,0px))); will-change:transform; }
-  .clink:hover{ --lift:-2px; background:var(--ink); color:var(--on-ink); border-color:var(--ink); }
+    transform:translate(var(--mtx,0px), calc(var(--mty,0px) + var(--lift,0px))); }
+  .clink:hover{ --lift:-2px; will-change:transform; background:var(--ink); color:var(--on-ink); border-color:var(--ink); }
 
   /* ---------- footer ---------- */
   footer{ position:relative; z-index:1; background:var(--bg-2); border-top:1px solid var(--line);
@@ -309,12 +345,28 @@
     color:var(--faint); font-size:13px; }
   footer .brand{ color:var(--ink); }
 
-  /* ---------- reveal ---------- */
-  .js .reveal{ opacity:0; transform:translateY(34px); transition:opacity 1s cubic-bezier(.2,.8,.2,1), transform 1s cubic-bezier(.2,.8,.2,1); }
-  .reveal.in{ opacity:1; transform:none; }
-  .reveal.d1{ transition-delay:.08s; } .reveal.d2{ transition-delay:.16s; } .reveal.d3{ transition-delay:.24s; }
+  /* ---------- reveal (refined: 22px + scale, expo-out, GPU-only) ---------- */
+  .js .reveal{ opacity:0; transform:translate3d(0,22px,0) scale(.988);
+    transition:opacity .85s var(--ease-out), transform .9s var(--ease-out); will-change:opacity,transform; }
+  .reveal.in{ opacity:1; transform:none; will-change:auto; }
+  .js .sec-head.reveal{ transform:translate3d(0,30px,0) scale(.99); }
+  /* transient blur ONLY on .reveal — composites fine, guarded for reduced-transparency/-motion */
+  @media not (prefers-reduced-transparency:reduce){
+    .js .reveal{ filter:blur(6px); transition:opacity .85s var(--ease-out), transform .9s var(--ease-out), filter .8s var(--ease-out); }
+    .reveal.in{ filter:blur(0); }
+  }
+  /* title / lead clip-path wipe; eyebrow x-drift (hero owns its own delays) */
+  .js .sec-title.reveal, .js .about-lead.reveal, .js .contact-h.reveal{ clip-path:inset(0 0 18% 0); }
+  .sec-title.reveal.in, .about-lead.reveal.in, .contact-h.reveal.in{ clip-path:inset(0 0 0 0); transition:opacity .85s var(--ease-out), transform .9s var(--ease-out), clip-path .9s var(--ease-out), filter .8s var(--ease-out); }
+  .js .eyebrow.reveal{ transform:translate3d(-14px,0,0); }
+  .eyebrow.reveal.in{ transform:none; }
+  /* hero-scoped authored stagger (curtain/hero IIFE owns these) */
+  .hero .reveal.d1{ transition-delay:.08s; } .hero .reveal.d2{ transition-delay:.16s; } .hero .reveal.d3{ transition-delay:.24s; }
+  @media (prefers-reduced-motion:reduce){
+    .js .reveal{ transform:none!important; clip-path:none!important; filter:none!important; transition:opacity .4s ease; }
+  }
 
-  /* ---------- background-clip fallback (never-invisible wordmark) ---------- */
+  /* ---------- background-clip fallback (legacy guard; no clipped serif remains) ---------- */
   @supports not ((-webkit-background-clip:text) or (background-clip:text)){
     .hero h1 .en, .stat .n{ -webkit-text-fill-color:currentColor; color:var(--ink); background:none; }
   }
@@ -338,10 +390,13 @@
   @media (max-width:860px){
     .hero .wrap{ max-width:100%; }
     .about-grid{ grid-template-columns:1fr; gap:36px; }
+    .about-lead{ max-width:100%; }
     .work-grid{ grid-template-columns:1fr; }
     .card.feat{ grid-column:span 1; }
-    .cap-grid{ grid-template-columns:1fr; }
+    .cap-grid{ grid-template-columns:1fr; gap:14px; }
     .hero h1{ font-size:clamp(48px,16vw,90px); line-height:.92; }
+    /* vertical cream wash instead of the 100deg horizontal fade (full-width mobile text) */
+    header.hero::before{ background:linear-gradient(180deg, rgba(251,250,244,.10) 0%, rgba(251,250,244,.50) 55%, rgba(251,250,244,.80) 100%); }
   }
   @media (max-width:430px){
     .hero h1{ font-size:clamp(46px,14.5vw,72px); line-height:1.0; }
@@ -356,7 +411,10 @@
 <body>
 <a href="#main" class="skip">Skip to content</a>
 
-<div id="intro"><span class="il" lang="zh-CN">甘霖</span><span class="il">GAN LIN</span></div>
+<div id="intro" aria-hidden="true">
+  <span class="iwords"><span class="il" lang="zh-CN">甘霖</span><span class="il">GAN LIN</span></span>
+  <span class="irule"></span>
+</div>
 
 <canvas id="gl" aria-hidden="true"></canvas>
 <div class="noise-fix" aria-hidden="true"></div>
@@ -369,7 +427,7 @@
     <a href="#work">Work</a>
     <a href="#capabilities">Capabilities</a>
     <a href="#contact">Contact</a>
-    <a href="https://github.com/ganlin770" target="_blank" rel="noopener" class="nav-cta">GitHub <span aria-hidden="true">↗</span></a>
+    <a href="https://github.com/ganlin770" target="_blank" rel="noopener" class="nav-cta">GitHub <span aria-hidden="true">↗</span><span class="vh">(opens in new tab)</span></a>
   </div>
   <button type="button" class="burger" id="burger" aria-label="Open menu" aria-controls="navlinks" aria-expanded="false"><span></span><span></span><span></span></button>
 </nav>
@@ -389,13 +447,13 @@
     </div>
     <div class="cta-row reveal d3">
       <a href="#work" class="btn solid mag">View Work <span class="arr" aria-hidden="true">↗</span></a>
-      <a href="https://github.com/ganlin770" target="_blank" rel="noopener" class="btn ghost mag">github.com/ganlin770</a>
+      <a href="https://github.com/ganlin770" target="_blank" rel="noopener" class="btn ghost mag">github.com/ganlin770<span class="vh">(opens in new tab)</span></a>
     </div>
   </div>
   <div class="scroll-hint" aria-hidden="true"><span>Scroll</span><span class="line"></span></div>
 </header>
 
-<main id="main" class="content">
+<main id="main" class="content" tabindex="-1">
 
   <!-- ABOUT -->
   <section class="panel" id="about" aria-labelledby="about-h">
@@ -431,42 +489,42 @@
       <div class="work-grid">
 
         <a class="card reveal" href="https://github.com/ganlin770/promptlab" target="_blank" rel="noopener" aria-label="promptlab on GitHub, opens in new tab">
-          <div class="ct-top"><span class="ct-name">promptlab</span><span class="ct-link"><span aria-hidden="true">GitHub ↗</span></span></div>
+          <div class="ct-top"><h3 class="ct-name">promptlab</h3><span class="ct-link"><span aria-hidden="true">GitHub ↗</span></span></div>
           <div class="ct-desc">From-scratch LLM eval framework — rule × LLM-as-judge engine, HTML reports + JSONL audit, wired into a CI gate (<code>--min-pass-rate</code>) for regression control.
             <span class="cn" lang="zh-CN">把「评测」当一等公民：用可复现指标证明 agent 行为，离线 mock 可跑、pytest 覆盖。</span></div>
           <div class="tags"><span class="tag">Python</span><span class="tag">LLM-as-judge</span><span class="tag">CI gate</span><span class="tag">eval</span></div>
         </a>
 
         <a class="card reveal d1" href="https://github.com/ganlin770/tool-smith" target="_blank" rel="noopener" aria-label="tool-smith on GitHub, opens in new tab">
-          <div class="ct-top"><span class="ct-name">tool-smith</span><span class="ct-link"><span aria-hidden="true">GitHub ↗</span></span></div>
+          <div class="ct-top"><h3 class="ct-name">tool-smith</h3><span class="ct-link"><span aria-hidden="true">GitHub ↗</span></span></div>
           <div class="ct-desc">Fine-tuned Qwen2.5-0.5B into a tool-calling router (PEFT + TRL, LoRA/SFT) — <b>fully-correct tool calls 4.1% → 74.2%, hard cases 0 → 76.7%</b> on a self-built base-vs-tuned eval. Wrapped in an engineered agent loop: validate → auto-repair retry → frontier fallback → full JSONL logging.
             <span class="cn" lang="zh-CN">自建 base-vs-tuned 评测：完全正确 4.1%→74.2%，难例 0→76.7%，loss 4.3→0.35。</span></div>
           <div class="tags"><span class="tag">PEFT/TRL</span><span class="tag">LoRA</span><span class="tag">FastMCP</span><span class="tag">agent loop</span></div>
         </a>
 
         <a class="card reveal" href="https://github.com/ganlin770/thesis-generator" target="_blank" rel="noopener" aria-label="thesis-generator on GitHub, opens in new tab">
-          <div class="ct-top"><span class="ct-name">thesis-generator</span><span class="ct-link"><span aria-hidden="true">GitHub ↗</span></span></div>
+          <div class="ct-top"><h3 class="ct-name">thesis-generator</h3><span class="ct-link"><span aria-hidden="true">GitHub ↗</span></span></div>
           <div class="ct-desc">A full-stack LLM app shipped to production — 8-stage pipeline on FastAPI with SSE live progress, Claude API + python-docx, deployed on Zeabur.
             <span class="cn" lang="zh-CN">从一个想法独立交付上线，端到端全栈流水线。</span></div>
           <div class="tags"><span class="tag">FastAPI</span><span class="tag">Claude API</span><span class="tag">SSE</span><span class="tag">deploy</span></div>
         </a>
 
         <a class="card reveal d1" href="https://github.com/ganlin770/matlab-viz-mcp" target="_blank" rel="noopener" aria-label="matlab-viz-mcp on GitHub, opens in new tab">
-          <div class="ct-top"><span class="ct-name">matlab-viz-mcp</span><span class="ct-link"><span aria-hidden="true">GitHub ↗</span></span></div>
+          <div class="ct-top"><h3 class="ct-name">matlab-viz-mcp</h3><span class="ct-link"><span aria-hidden="true">GitHub ↗</span></span></div>
           <div class="ct-desc">An MCP server that lets LLMs generate MATLAB visualizations through the Model Context Protocol.
             <span class="cn" lang="zh-CN">代表性 MCP 节点，Node MCP SDK 实现。</span></div>
           <div class="tags"><span class="tag">TypeScript</span><span class="tag">MCP SDK</span><span class="tag">tool calling</span></div>
         </a>
 
         <a class="card feat reveal" href="https://github.com/ganlin770" target="_blank" rel="noopener" aria-label="AIGC content pipeline and the 70+ skill matrix on GitHub, opens in new tab">
-          <div class="ct-top"><span class="ct-name">AIGC content pipeline &amp; the 70+ skill matrix</span><span class="ct-link"><span aria-hidden="true">GitHub ↗</span></span></div>
+          <div class="ct-top"><h3 class="ct-name">AIGC content pipeline &amp; the 70+ skill matrix</h3><span class="ct-link"><span aria-hidden="true">GitHub ↗</span></span></div>
           <div class="ct-desc">An end-to-end production line — script → visuals → cloned-voice TTS (MiniMax / ElevenLabs / F5-TTS) → ffmpeg mux → subtitle QA — driving bilingual dev content across TikTok / X / IG and 小红书 / 抖音 / B站 — <b>1000+ niche-precise followers</b> across platforms. Built on a self-made matrix of 70+ Claude Code Skills &amp; 20+ MCP Servers, including <b>paper-search-server</b> (Scopus search over Flask).
             <span class="cn" lang="zh-CN">技术可信度驱动的开发者增长：自建生产线支撑日更，全平台合计垂类精准粉丝 1000+，跑通 选题→生产→分发→复盘→付费 闭环。</span></div>
           <div class="tags"><span class="tag">TTS clone</span><span class="tag">Remotion</span><span class="tag">ffmpeg</span><span class="tag">multi-agent fan-out</span><span class="tag">DevRel</span></div>
         </a>
 
       </div>
-      <p class="repo-note reveal">More open-source, all clickable &amp; reproducible → <a href="https://github.com/ganlin770" target="_blank" rel="noopener">github.com/ganlin770</a></p>
+      <p class="repo-note reveal">More open-source, all clickable &amp; reproducible → <a href="https://github.com/ganlin770" target="_blank" rel="noopener">github.com/ganlin770<span class="vh">(opens in new tab)</span></a></p>
     </div>
   </section>
 
@@ -475,12 +533,12 @@
     <div class="wrap">
       <div class="sec-head reveal"><span class="sec-num" aria-hidden="true">03</span><h2 id="cap-h" class="sec-title">Capabilities<span class="cn" lang="zh-CN">能力</span></h2></div>
       <div class="cap-grid">
-        <div class="cap reveal"><div class="ci" aria-hidden="true">A1</div><div class="ch">LLM Eval / Reliability <span class="cn" lang="zh-CN">评测与可靠性</span></div><div class="cl"><b>Rule × LLM-as-judge</b> hybrid, CI gate + JSONL audit + HTML reports, failure recovery (validate / repair-retry / frontier fallback), self-built observability.</div></div>
-        <div class="cap reveal d1"><div class="ci" aria-hidden="true">A2</div><div class="ch">MCP / Agent Engineering <span class="cn" lang="zh-CN">Agent 工程</span></div><div class="cl"><b>Tool calling</b>, context &amp; memory (RAG), multi-agent fan-out. 20+ MCP Servers (Node MCP SDK / Python FastMCP) · 70+ Claude Code Skills.</div></div>
-        <div class="cap reveal d2"><div class="ci" aria-hidden="true">A3</div><div class="ch">Model Fine-tuning <span class="cn" lang="zh-CN">模型微调 · 应用层</span></div><div class="cl"><b>PEFT + TRL · LoRA / SFT</b> on Apple Silicon / MPS — Qwen2.5-0.5B tool router (rank 16). Applied engineering, not algorithm research.</div></div>
-        <div class="cap reveal"><div class="ci" aria-hidden="true">A4</div><div class="ch">Full-stack &amp; Deploy <span class="cn" lang="zh-CN">全栈与部署</span></div><div class="cl"><b>Python / FastAPI</b>, Node / TypeScript, React / Next.js, ship to Vercel / Zeabur. Idea → production, solo.</div></div>
-        <div class="cap reveal d1"><div class="ci" aria-hidden="true">A5</div><div class="ch">AI Coding <span class="cn" lang="zh-CN">AI 编程左右手</span></div><div class="cl"><b>Claude Code · Cursor · Codex</b> as daily drivers — read open-source code, reproduce, and ship.</div></div>
-        <div class="cap reveal d2"><div class="ci" aria-hidden="true">A6</div><div class="ch">Content Growth / AIGC <span class="cn" lang="zh-CN">内容增长</span></div><div class="cl"><b>TikTok / X / IG</b> (English), TTS cloning, Remotion, ffmpeg. Plus applied data-analysis &amp; modeling with real paying clients.</div></div>
+        <div class="cap reveal"><div class="ci" aria-hidden="true">A1</div><h3 class="ch">LLM Eval / Reliability <span class="cn" lang="zh-CN">评测与可靠性</span></h3><div class="cl"><b>Rule × LLM-as-judge</b> hybrid, CI gate + JSONL audit + HTML reports, failure recovery (validate / repair-retry / frontier fallback), self-built observability.</div></div>
+        <div class="cap reveal d1"><div class="ci" aria-hidden="true">A2</div><h3 class="ch">MCP / Agent Engineering <span class="cn" lang="zh-CN">Agent 工程</span></h3><div class="cl"><b>Tool calling</b>, context &amp; memory (RAG), multi-agent fan-out. 20+ MCP Servers (Node MCP SDK / Python FastMCP) · 70+ Claude Code Skills.</div></div>
+        <div class="cap reveal d2"><div class="ci" aria-hidden="true">A3</div><h3 class="ch">Model Fine-tuning <span class="cn" lang="zh-CN">模型微调 · 应用层</span></h3><div class="cl"><b>PEFT + TRL · LoRA / SFT</b> on Apple Silicon / MPS — Qwen2.5-0.5B tool router (rank 16). Applied engineering, not algorithm research.</div></div>
+        <div class="cap reveal"><div class="ci" aria-hidden="true">A4</div><h3 class="ch">Full-stack &amp; Deploy <span class="cn" lang="zh-CN">全栈与部署</span></h3><div class="cl"><b>Python / FastAPI</b>, Node / TypeScript, React / Next.js, ship to Vercel / Zeabur. Idea → production, solo.</div></div>
+        <div class="cap reveal d1"><div class="ci" aria-hidden="true">A5</div><h3 class="ch">AI Coding <span class="cn" lang="zh-CN">AI 编程左右手</span></h3><div class="cl"><b>Claude Code · Cursor · Codex</b> as daily drivers — read open-source code, reproduce, and ship.</div></div>
+        <div class="cap reveal d2"><div class="ci" aria-hidden="true">A6</div><h3 class="ch">Content Growth / AIGC <span class="cn" lang="zh-CN">内容增长</span></h3><div class="cl"><b>TikTok / X / IG</b> (English), TTS cloning, Remotion, ffmpeg. Plus applied data-analysis &amp; modeling with real paying clients.</div></div>
       </div>
     </div>
   </section>
@@ -494,7 +552,7 @@
         <p>Building agent tools and the dev content that earns trust in them. Open to AI / Agent engineering &amp; technical DevRel roles — internship or junior, remote-first. <span style="display:block;color:var(--faint);margin-top:6px;" lang="zh-CN">在做 Agent 工具，也在做让开发者信得过的技术内容。开放 AI/Agent 工程 · 技术型 DevRel 机会，远程优先，可线下面谈。</span></p>
         <div class="contact-row">
           <a class="clink mag" href="mailto:2379286964@qq.com?subject=AI%2FAgent%20role"><span aria-hidden="true">✉</span> Email me — 2379286964@qq.com</a>
-          <a class="clink mag" href="https://github.com/ganlin770" target="_blank" rel="noopener"><span aria-hidden="true">⌘</span> See the code — github.com/ganlin770</a>
+          <a class="clink mag" href="https://github.com/ganlin770" target="_blank" rel="noopener"><span aria-hidden="true">⌘</span> See the code — github.com/ganlin770<span class="vh">(opens in new tab)</span></a>
         </div>
       </div>
     </div>
@@ -504,7 +562,7 @@
 
 <footer>
   <span class="brand"><span class="dot" aria-hidden="true"></span><span lang="zh-CN">甘霖</span> · GAN LIN</span>
-  <span>© 2026 — Designed &amp; built with WebGL. Cream field × refractive glass, hand-written shaders.</span>
+  <span>© 2026 — Designed &amp; built with WebGL. Cream field × refractive thin-film glass, hand-written shaders.</span>
 </footer>
 
 <script>
@@ -512,7 +570,7 @@
 document.documentElement.classList.add('js');
 var RM = matchMedia('(prefers-reduced-motion: reduce)');
 
-/* ============ WebGL cream-orb: light field + single-refraction glass ============ */
+/* ============ WebGL cream-orb: light field + single-refraction thin-film glass ============ */
 (function(){
   const canvas = document.getElementById('gl');
   const gl = canvas.getContext('webgl', {antialias:false, alpha:false, powerPreference:'default'});
@@ -530,11 +588,12 @@ uniform float uTime;       // seconds
 uniform vec2  uMouse;      // 0..1, y up
 uniform float uScroll;     // 0 hero .. 1 content risen
 uniform float uReduce;     // 1 animate, 0 reduced-motion (freezes temporal terms)
-uniform float uQuality;    // 1 full, 0 lite (drops the caustic + 1 dispersion tap)
+uniform float uQuality;    // 1 full, 0 lite (drops the caustic colour)
 uniform float uLeftBias;   // 1 desktop (protect left headline), 0 mobile
 uniform float uGlassDisp;  // refraction displacement (~0.16 thin .. ~0.24 chunky)
-uniform float uDispSpread; // spectral spread at rim (~0.05)
-uniform float uRimStr;     // spectral fresnel rim strength (~1.0)
+uniform float uDispSpread; // per-channel film wavelength split (~0.06)
+uniform float uRimStr;     // thin-film visibility (~1.0)
+uniform float uMobile;     // 1 portrait/small (shrink + recenter orb), 0 otherwise
 
 /* ---- cream palette (sampled from haoqi.design) ---- */
 const vec3 CREAM   = vec3(0.984,0.980,0.957); // #fbfaf4
@@ -565,7 +624,7 @@ float fbm2(vec2 p){
   v+=a*noise(p);
   return v;
 }
-/* 3-octave fbm — used ONCE, only inside the glass for the optional caustic */
+/* 3-octave fbm — used ONCE, only inside the glass for the caustic + film thickness */
 float fbm3(vec2 p){
   float v=0.0, a=0.6;
   mat2 m=mat2(1.6,1.2,-1.2,1.6);
@@ -577,6 +636,7 @@ float fbm3(vec2 p){
 
 /* =========================================================================
    bgField(): the cream editorial field. EXACTLY ONE fbm2 evaluation.
+   tint raised 0.15 -> 0.22 so the lens-magnified field has legible structure.
    ========================================================================= */
 vec3 bgField(vec2 uv){
   float t = uTime*0.02*uReduce;
@@ -584,11 +644,27 @@ vec3 bgField(vec2 uv){
   vec3 cool = mix(SKY, PERI, 0.5);
   vec3 warm = mix(GOLD, CORAL, 0.5);
   vec3 tint = mix(warm, cool, smoothstep(0.30, 0.72, n));
-  vec3 col = mix(CREAM, tint, 0.15*smoothstep(0.10,0.95,n));
+  vec3 col = mix(CREAM, tint, 0.22*smoothstep(0.10,0.95,n));
   float vig = smoothstep(0.2, 1.5, dot(uv,uv));
   col = mix(col, GREIGE, vig*0.55);
   col *= 0.985 + 0.03*n;
   return col;
+}
+
+/* -------------------------------------------------------------------------
+   thinFilm(): RGB interference colour from an optical path difference.
+   Cheap 3-cosine spectral reconstruction — NO field eval, NO texture.
+   Pre-biased into the locked iridescent palette so it tints, never reads
+   as pure RGB neon.
+   ------------------------------------------------------------------------- */
+vec3 thinFilm(float opd, float spread){
+  vec3 ph = 6.2831853 * (opd + vec3(-spread, 0.0, spread));
+  vec3 c  = 0.5 + 0.5*cos(ph);
+  vec3 lo = mix(SKY,  PERI, 0.5);   // cool trough
+  vec3 hi = mix(GOLD, CORAL,0.5);   // warm crest
+  vec3 spectral = mix(lo, hi, c.gbr*0.5 + c.rgb*0.5);
+  spectral = mix(spectral, MINT, c.g*c.g*0.25); // oil-slick green band
+  return spectral;
 }
 
 void main(){
@@ -600,14 +676,18 @@ void main(){
   /* ---------- BACKGROUND: one and only one field eval outside the orb ---------- */
   vec3 col = bgField(uv);
 
-  /* ---------- orb geometry (parked right, gentle mouse + idle drift) ---------- */
+  /* ---------- orb geometry (haoqi asymmetry: parked right, gentle drift) ---------- */
   float engage  = smoothstep(0.05, 0.40, length(m));
   float idle    = 1.0 - engage;
   vec2  floatOff= vec2(sin(uTime*0.42), sin(uTime*0.33+1.7))*0.016*idle*uReduce;
   float breathe = 1.0 + 0.010*sin(uTime*0.5)*idle*uReduce;
 
-  vec2  ctr = vec2(0.42, 0.0) + m*0.10 + floatOff;
-  float R   = 0.58*breathe*(1.0 - 0.08*uScroll);
+  /* desktop: pushed right + slightly up so it clears the left headline;
+     mobile/portrait: recentered + shrunk so it stops oversizing off-edge. */
+  vec2  ctrBase = mix(vec2(0.72, 0.06), vec2(0.12, -0.02), uMobile);
+  float Rbase   = mix(0.58, 0.42, uMobile);
+  vec2  ctr = ctrBase + m*0.10 + floatOff;
+  float R   = Rbase*breathe*(1.0 - 0.08*uScroll);
   vec2  pp  = uv - ctr;
   float d   = length(pp);
 
@@ -616,9 +696,9 @@ void main(){
   float sd = length(vec2(sp.x*0.85, sp.y*1.25));
   float shadow = smoothstep(R*1.55, R*0.55, sd);
   float aoRing = smoothstep(R*1.20, R, d) * (1.0 - smoothstep(R, R*1.20, d));
-  float ground = clamp(shadow*0.20 + aoRing*0.16, 0.0, 0.28);   // warm-tinted cap (judge fix #4)
+  float ground = clamp(shadow*0.20 + aoRing*0.16, 0.0, 0.28);
   ground *= step(R, d) * (1.0 - 0.45*uScroll);
-  col = mix(col, col*GREIGE/CREAM, ground);                     // shadow leans greige, not neutral grey
+  col = mix(col, col*GREIGE/CREAM, ground);   // shadow leans greige, not neutral grey
 
   if(d < R){
     float z = sqrt(max(R*R - d*d, 0.0)) / R;        // 0 rim .. 1 centre
@@ -631,53 +711,68 @@ void main(){
     float fres = pow(1.0 - ndv, 4.0);
     float thin = 1.0 - z;
 
-    /* ===== SINGLE refraction + 4-tap chromatic dispersion of the cream ===== */
+    /* ===== SINGLE refraction + 3-tap chromatic dispersion w/ true lens magnification =====
+       interior fbm ledger: 1 outer bgField + 3 taps + 1 fbm3 = 5 (<= budget). */
+    float rr      = d/R;                              // 0 centre .. 1 rim
+    float lens    = mix(0.55, 1.18, smoothstep(0.0,1.0, rr*rr)); // centre magnifies inward, rim expands/inverts
     float dispMag = uGlassDisp * (0.75 + 0.95*thin);
     vec3  glass = vec3(0.0);
     vec3  wsum  = vec3(0.0);
-    for(int i=0;i<4;i++){
-      if(uQuality < 0.5 && i==3) continue;           // lite -> 3 samples (i=0..2 always run)
-      float f   = float(i)/3.0;
+    for(int i=0;i<3;i++){
+      float f   = float(i)/2.0;
       float ior = mix(1.45, 1.60, f) + f*uDispSpread;
       float eta = 1.0/ior;
       vec3  r1  = refract(-V, nrm, eta);
       if(dot(r1,r1) < 1e-5) r1 = reflect(-V, nrm);   // TIR guard
       r1 = r1 * inversesqrt(max(dot(r1,r1), 1e-8));
-      vec2 suv = ctr + pp + r1.xy*dispMag;
+      vec2 baseUV = ctr + pp*lens;                    // lens magnification (refraction made VISIBLE)
+      vec2 suv    = baseUV + r1.xy*dispMag*(0.6 + 0.8*rr); // chromatic split rides the rim
       vec3 s   = bgField(suv);
       vec3 tint;
       if(i==0)      tint = MINT;
       else if(i==1) tint = SKY;
-      else if(i==2) tint = PERI;
-      else          tint = mix(CORAL, GOLD, 0.5);
+      else          tint = PERI;
       vec3 wsp = mix(vec3(1.0), tint, (0.32 + 0.65*fres));
       glass += s * wsp;
       wsum  += wsp;
     }
     glass /= max(wsum, vec3(0.001));
-    glass = mix(glass, glass*vec3(0.90,0.93,0.99), 0.45);  // glass density: faint darken + cool lean, not a white ball
 
-    /* ===== ONE optional caustic (lite drops it); gated harder to rim (judge fix #5) ===== */
-    if(uQuality > 0.5){
+    /* ===== Beer-Lambert depth: thin clear rim, denser cool core, faint warm pool ===== */
+    float path = 0.35 + 0.65*z;
+    glass *= mix(vec3(1.0), vec3(0.88,0.92,0.99), path);
+    glass = mix(glass, glass*0.93, smoothstep(0.2,1.0,z)*0.5);
+    glass += mix(GOLD, CREAM, 0.5) * pow(z, 3.0) * 0.04;
+
+    /* ===== ONE caustic fbm3 — reuse its scalar to perturb film thickness =====
+       lite path still computes fbm3 once so the iridescence keeps its swirl. */
+    float filmMod = 0.0;
+    {
       vec2 iuv = nrm.xy*2.2 + vec2(uTime*0.05, -uTime*0.04)*uReduce;
-      float c = fbm3(iuv);
-      float caustic = pow(max(c,0.0), 2.2) * (0.20 + 0.55*z) * (1.0 - z);  // center stays clean
-      glass += mix(SKY, MINT, c) * caustic * 0.06;
+      float c = fbm3(iuv);                 // the ONE interior fbm eval
+      filmMod = c;
+      if(uQuality > 0.5){
+        float caustic = pow(max(c,0.0), 2.2) * (0.20 + 0.55*z) * (1.0 - z);  // center stays clean
+        glass += mix(SKY, MINT, c) * caustic * 0.06;
+      }
     }
 
-    /* ===== spectral FRESNEL RIM — visible oil-on-water iridescence on cream ===== */
-    float band = 6.2831853*((1.0 - ndv)*1.25 + 0.05*uTime*uReduce);
-    vec3 spec1 = mix(SKY,  INDIGO, 0.5+0.5*sin(band));
-    vec3 spec2 = mix(PERI, CORAL,  0.5+0.5*sin(band+2.094));
-    vec3 spec3 = mix(GOLD, MINT,   0.5+0.5*sin(band+4.188));
-    vec3 rim   = (spec1+spec2+spec3)/3.0;
-    /* tint the orb TOWARD the spectrum at the rim (visible iridescence, not just additive) */
-    glass = mix(glass, rim, clamp(fres*0.80*uRimStr, 0.0, 0.92));
-    glass += fres*fres * rim * 0.22 * uRimStr;
-    float graze = pow(1.0 - ndv, 9.0);
-    glass = mix(glass, mix(INDIGO, vec3(0.0,0.467,0.737), 0.5), graze*0.45*uRimStr);
+    /* ===== THIN-FILM INTERFERENCE (oil-on-water) — 0 extra field evals ===== */
+    float drift  = 0.05*uTime*uReduce;
+    float opd    = 2.4                        // base order count -> a few bands in body
+                 + 7.0*(1.0 - ndv)*(1.0 - ndv)// rim packs bands tightly (grazing)
+                 + 1.6*filmMod                // oil-slick swirl (reused noise)
+                 + drift;                     // gentle animated shimmer
+    vec3 film    = thinFilm(opd, uDispSpread + 0.18);
 
-    /* ===== specular glint (wet-glass, warmed & dialed back — judge fix #6) + soft sheen ===== */
+    /* soft fresnel-ish gate -> body desaturates to cream, rim blooms. NOT a hard ^9 graze. */
+    float filmGate = pow(1.0 - ndv, 2.5);
+    float vis      = clamp(filmGate * (0.85*uRimStr), 0.0, 0.85);
+
+    glass = mix(glass, glass*film, vis);     // chromatic tint, not additive haze
+    glass += filmGate*filmGate * (film-0.5) * 0.16 * uRimStr; // wet-meniscus crest at rim
+
+    /* ===== specular glint (wet-glass) + soft sheen ===== */
     vec3 L = normalize(vec3(-0.35, 0.55, 0.78));
     vec3 H = normalize(L + V);
     float ndh = max(dot(nrm, H), 0.0);
@@ -686,7 +781,8 @@ void main(){
 
     float edge = smoothstep(R, R-0.010, d);
     col = mix(col, glass, edge);
-    col += smoothstep(0.016, 0.0, abs(d-R)) * 0.22 * rim;
+    /* crisp iridescent contact line at the silhouette (thin-film colour, not white) */
+    col += smoothstep(0.016, 0.0, abs(d-R)) * 0.22 * film;
   }
 
   /* ---------- scroll dim toward the editorial content ---------- */
@@ -696,9 +792,9 @@ void main(){
   float vig = smoothstep(1.7, 0.4, length(uv));
   col = mix(col*0.965, col, vig);
 
-  /* ---------- protect the left headline column (desktop) — lighten toward cream ---------- */
-  float leftMask = smoothstep(0.52, 0.10, px.x) * uLeftBias;
-  col = mix(col, mix(col, CREAM, 0.5), leftMask*0.45);
+  /* ---------- protect the left headline column (desktop) — softened ---------- */
+  float leftMask = smoothstep(0.46, 0.05, px.x) * uLeftBias;
+  col = mix(col, mix(col, CREAM, 0.5), leftMask*0.30);
 
   /* ---------- NaN scrub + display dither (kills 8-bit banding on cream) ---------- */
   col = (col==col) ? col : CREAM;
@@ -711,8 +807,10 @@ void main(){
 `;
 
   let prog, buf, loc;
-  let uRes,uTime,uMouse,uScroll,uReduce,uQuality,uLeftBias,uGlassDisp,uDispSpread,uRimStr;
+  let uRes,uTime,uMouse,uScroll,uReduce,uQuality,uLeftBias,uGlassDisp,uDispSpread,uRimStr,uMobile;
   let scrollEased = 0, glReady = true;
+
+  const isMobile = ()=> matchMedia('(max-width:860px)').matches && matchMedia('(orientation:portrait)').matches;
 
   function sh(type, src){
     const o = gl.createShader(type); gl.shaderSource(o, src); gl.compileShader(o);
@@ -747,14 +845,16 @@ void main(){
     uGlassDisp = gl.getUniformLocation(prog,'uGlassDisp');
     uDispSpread= gl.getUniformLocation(prog,'uDispSpread');
     uRimStr    = gl.getUniformLocation(prog,'uRimStr');
+    uMobile    = gl.getUniformLocation(prog,'uMobile');
 
     // static config
     gl.uniform1f(uReduce,    RM.matches ? 0.0 : 1.0);
     gl.uniform1f(uQuality,   1.0);
-    gl.uniform1f(uLeftBias,  matchMedia('(max-width:860px)').matches ? 0.0 : 1.0);
-    gl.uniform1f(uGlassDisp, 0.18);   // thinner, more editorial lens (judge fix #7)
-    gl.uniform1f(uDispSpread,0.05);   // spectral spread at rim
-    gl.uniform1f(uRimStr,    1.0);    // fresnel rim strength
+    gl.uniform1f(uLeftBias,  isMobile() ? 0.0 : 1.0);
+    gl.uniform1f(uGlassDisp, 0.18);   // thin, editorial lens
+    gl.uniform1f(uDispSpread,0.06);   // per-channel film wavelength split
+    gl.uniform1f(uRimStr,    1.0);    // thin-film visibility
+    gl.uniform1f(uMobile,    isMobile() ? 1.0 : 0.0);
   }
   init();
 
@@ -768,6 +868,11 @@ void main(){
     canvas.width=w*DPR; canvas.height=h*DPR;
     canvas.style.width=w+'px'; canvas.style.height=h+'px';
     gl.viewport(0,0,canvas.width,canvas.height);
+    if(glReady){
+      // recompute orientation-dependent uniforms (orientationchange / resize)
+      gl.uniform1f(uMobile,   isMobile() ? 1.0 : 0.0);
+      gl.uniform1f(uLeftBias, isMobile() ? 0.0 : 1.0);
+    }
     if(RM.matches && glReady) draw(performance.now());
   }
   resize(); addEventListener('resize', resize);
@@ -786,9 +891,6 @@ void main(){
     gl.uniform2f(uRes, canvas.width, canvas.height);
     gl.uniform1f(uTime, RM.matches ? 6.0 : (now-t0)/1000);
     gl.uniform2f(uMouse, mx, my);
-    const h=innerHeight;
-    const tgt=Math.min((window.scrollY||0)/Math.max(h,1), 1);
-    scrollEased += (tgt-scrollEased)*0.08;
     gl.uniform1f(uScroll, scrollEased);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   }
@@ -797,6 +899,10 @@ void main(){
   function frame(now){
     if(!running || gl.isContextLost()) return;
     const dt=now-lastT; lastT=now;
+    // advance the eased scroll signal inside the one rAF that consumes it
+    const h=innerHeight;
+    const tgt=Math.min((window.scrollY||0)/Math.max(h,1), 1);
+    scrollEased += (tgt-scrollEased)*0.08;
     draw(now);
     if(!degraded){
       acc+=dt;
@@ -837,17 +943,28 @@ void main(){
 /* ============ custom cursor ============ */
 (function(){
   if(matchMedia('(pointer:coarse)').matches) return;
-  if(RM.matches){ document.body.style.cursor='auto'; return; }
+  if(RM.matches){ return; }
   const ring=document.querySelector('.cur'), dot=document.querySelector('.cur-d');
   if(!ring||!dot) return;
+  document.documentElement.classList.add('cur-on'); // enable cursor:none only now that we've bound
   let rx=0,ry=0,dx=0,dy=0,curRaf=0;
-  addEventListener('mousemove',e=>{ dx=e.clientX; dy=e.clientY; dot.style.transform=`translate(${dx-2.5}px,${dy-2.5}px)`; });
-  function loop(){ if(!document.hidden){ rx+=(dx-rx)*0.18; ry+=(dy-ry)*0.18; ring.style.transform=`translate(${rx-17}px,${ry-17}px)`; } curRaf=requestAnimationFrame(loop); }
+  addEventListener('mousemove',e=>{ dx=e.clientX; dy=e.clientY; });
+  addEventListener('mousedown',()=>ring.classList.add('press'));
+  addEventListener('mouseup',()=>ring.classList.remove('press'));
+  function loop(){ if(!document.hidden){
+      rx+=(dx-rx)*0.18; ry+=(dy-ry)*0.18;
+      ring.style.transform=`translate(${rx-17}px,${ry-17}px)`;
+      dot.style.transform=`translate(${dx-2.5}px,${dy-2.5}px)`;
+    } curRaf=requestAnimationFrame(loop); }
   loop();
   document.addEventListener('visibilitychange',()=>{ if(!document.hidden){ cancelAnimationFrame(curRaf); loop(); } });
   document.querySelectorAll('a,.mag,.burger,.card').forEach(el=>{
     el.addEventListener('mouseenter',()=>ring.classList.add('grow'));
     el.addEventListener('mouseleave',()=>ring.classList.remove('grow'));
+  });
+  document.querySelectorAll('h1,h2,.sec-title,p').forEach(el=>{
+    el.addEventListener('mouseenter',()=>ring.classList.add('text'));
+    el.addEventListener('mouseleave',()=>ring.classList.remove('text'));
   });
 })();
 
@@ -855,22 +972,24 @@ void main(){
 (function(){
   if(matchMedia('(max-width:860px)').matches || RM.matches) return;
   document.querySelectorAll('.mag').forEach(el=>{
-    let tx=0,ty=0,cx=0,cy=0,raf=null,active=false;
+    let tx=0,ty=0,cx=0,cy=0,raf=null,active=false,rect=null;
     const run=()=>{ cx+=(tx-cx)*0.15; cy+=(ty-cy)*0.15;
       el.style.setProperty('--mtx',cx.toFixed(2)+'px'); el.style.setProperty('--mty',cy.toFixed(2)+'px');
       if(Math.abs(tx-cx)>0.1||Math.abs(ty-cy)>0.1||active){ raf=requestAnimationFrame(run); } else { raf=null; } };
-    el.addEventListener('mousemove',e=>{ const r=el.getBoundingClientRect();
+    el.addEventListener('mouseenter',()=>{ rect=el.getBoundingClientRect(); }); // cache rect, avoid pointer-rate layout reads
+    el.addEventListener('mousemove',e=>{ const r=rect||(rect=el.getBoundingClientRect());
       tx=(e.clientX-r.left-r.width/2)*0.18; ty=(e.clientY-r.top-r.height/2)*0.22; active=true; if(!raf) raf=requestAnimationFrame(run); });
-    el.addEventListener('mouseleave',()=>{ tx=0; ty=0; active=false; if(!raf) raf=requestAnimationFrame(run); });
+    el.addEventListener('mouseleave',()=>{ tx=0; ty=0; active=false; rect=null; if(!raf) raf=requestAnimationFrame(run); });
   });
-  // card spotlight follow
+  // card spotlight follow — cache rect on enter, coalesce writes via rAF (offsetX/Y, no per-move getBoundingClientRect)
   document.querySelectorAll('.card').forEach(c=>{
-    c.addEventListener('mousemove',e=>{ const r=c.getBoundingClientRect();
-      c.style.setProperty('--mx',(e.clientX-r.left)+'px'); c.style.setProperty('--my',(e.clientY-r.top)+'px'); });
+    let sx=0,sy=0,sraf=null;
+    const apply=()=>{ c.style.setProperty('--mx',sx+'px'); c.style.setProperty('--my',sy+'px'); sraf=null; };
+    c.addEventListener('mousemove',e=>{ sx=e.offsetX; sy=e.offsetY; if(!sraf) sraf=requestAnimationFrame(apply); });
   });
 })();
 
-/* ============ reveal (robust) + nav + scroll progress + hero parallax ============ */
+/* ============ reveal (robust) + nav + scroll progress + hero parallax + scroll-spy ============ */
 (function(){
   function showAll(){ document.querySelectorAll('.reveal:not(.in)').forEach(e=>e.classList.add('in')); }
 
@@ -878,6 +997,8 @@ void main(){
     showAll();
   } else {
     const io=new IntersectionObserver(es=>{ es.forEach(x=>{ if(!x.isIntersecting) return;
+      // hero is owned by the curtain/hero IIFE — never JS-stagger it here
+      if(x.target.closest('.hero')){ io.unobserve(x.target); return; }
       const grp=x.target.closest('.work-grid,.cap-grid,.about-grid,.sec-head,.wrap')||document.body;
       const sibs=[...grp.querySelectorAll('.reveal')].filter(n=>n.dataset.io!=='done');
       const i=sibs.indexOf(x.target);
@@ -893,35 +1014,75 @@ void main(){
     addEventListener('pageshow',showAll);
   }
 
-  // nav scrolled state
   const nav=document.getElementById('nav');
-  addEventListener('scroll',()=>{ nav.classList.toggle('scrolled', scrollY>40); },{passive:true});
-
-  // lerped scroll signal -> progress bar + hero parallax
   const bar=document.getElementById('sprog');
   const heroWrap=document.querySelector('.hero .wrap');
+  const heroEl=document.querySelector('header.hero');
+  const heroH1=document.querySelector('.hero h1');
+  const heroSub=document.querySelector('.hero .sub');
   const reduce=RM.matches;
+  if(heroWrap && !reduce) heroWrap.style.willChange='transform,opacity';
+
   let cur=0,target=0,sraf=null;
   function onTick(y){
+    // nav scrolled state (merged from the old separate scroll listener)
+    nav.classList.toggle('scrolled', y>40);
     const h=document.documentElement.scrollHeight-innerHeight;
     if(bar) bar.style.transform='scaleX('+(h?Math.max(0,Math.min(1,y/h)):0)+')';
-    if(heroWrap){ const t=Math.min(y/innerHeight,1);
-      heroWrap.style.transform='translateY('+(y*0.18)+'px)'; heroWrap.style.opacity=(1-t*0.9).toFixed(3); }
+    if(reduce) return; // no scroll-linked motion under prefers-reduced-motion
+    const t=Math.min(y/innerHeight,1);
+    const e=t*t*(3-2*t);
+    if(heroEl) heroEl.style.setProperty('--hero-scroll', e.toFixed(3));
+    if(heroWrap){
+      if(t>=1){ // hero scrolled past — stop per-frame string writes on the big text subtree
+        heroWrap.style.transform='translate3d(0,'+(innerHeight*0.16)+'px,0)';
+        heroWrap.style.opacity='0.08';
+      } else {
+        heroWrap.style.transform='translate3d(0,'+(y*0.16)+'px,0)';
+        heroWrap.style.opacity=(1-e*0.92).toFixed(3);
+        if(heroH1) heroH1.style.transform='translate3d(0,'+(y*0.05)+'px,0)';
+        if(heroSub) heroSub.style.transform='translate3d(0,'+(y*-0.04)+'px,0)';
+      }
+    }
   }
   function tick(){ cur+=(target-cur)*0.12; onTick(cur);
     if(Math.abs(target-cur)>0.4){ sraf=requestAnimationFrame(tick); } else { cur=target; onTick(cur); sraf=null; } }
   addEventListener('scroll',()=>{ target=window.scrollY||window.pageYOffset; if(reduce){ onTick(target); return; } if(!sraf) sraf=requestAnimationFrame(tick); },{passive:true});
   onTick(0);
 
-  // mobile menu (accessible)
+  // nav scroll-spy: one IO over the 4 sections -> .active + aria-current
+  if('IntersectionObserver' in window){
+    const map={};
+    document.querySelectorAll('.nav-links a[href^="#"]').forEach(a=>{ map[a.getAttribute('href').slice(1)]=a; });
+    const spy=new IntersectionObserver(es=>{ es.forEach(x=>{ const a=map[x.target.id]; if(!a) return;
+      if(x.isIntersecting){
+        Object.values(map).forEach(l=>{ l.classList.remove('active'); l.removeAttribute('aria-current'); });
+        a.classList.add('active'); a.setAttribute('aria-current','true');
+      }
+    }); },{rootMargin:'-45% 0px -45% 0px', threshold:0});
+    ['about','work','capabilities','contact'].forEach(id=>{ const s=document.getElementById(id); if(s) spy.observe(s); });
+  }
+
+  // mobile menu (accessible focus trap + inert background)
   const burger=document.getElementById('burger'), links=document.getElementById('navlinks');
+  const sibs=[document.querySelector('header.hero'), document.getElementById('main'), document.querySelector('footer'), document.getElementById('sprog')].filter(Boolean);
+  function setInert(on){ sibs.forEach(el=>{ if(on){ el.setAttribute('inert',''); el.setAttribute('aria-hidden','true'); } else { el.removeAttribute('inert'); el.removeAttribute('aria-hidden'); } }); }
+  function trapTab(e){
+    if(e.key!=='Tab' || !links.classList.contains('open')) return;
+    const f=[burger, ...links.querySelectorAll('a')];
+    const first=f[0], last=f[f.length-1];
+    if(e.shiftKey && document.activeElement===first){ e.preventDefault(); last.focus(); }
+    else if(!e.shiftKey && document.activeElement===last){ e.preventDefault(); first.focus(); }
+  }
   const openMenu=()=>{ burger.classList.add('x'); links.classList.add('open'); document.body.classList.add('menu-open');
     burger.setAttribute('aria-expanded','true'); burger.setAttribute('aria-label','Close menu');
+    setInert(true); addEventListener('keydown',trapTab);
     const a=links.querySelector('a'); if(a) a.focus(); };
   const closeMenu=()=>{ burger.classList.remove('x'); links.classList.remove('open'); document.body.classList.remove('menu-open');
-    burger.setAttribute('aria-expanded','false'); burger.setAttribute('aria-label','Open menu'); };
+    burger.setAttribute('aria-expanded','false'); burger.setAttribute('aria-label','Open menu');
+    setInert(false); removeEventListener('keydown',trapTab); };
   burger.addEventListener('click',()=> burger.getAttribute('aria-expanded')==='true'?closeMenu():openMenu());
-  links.querySelectorAll('a').forEach(a=>a.addEventListener('click',closeMenu));
+  links.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{ closeMenu(); burger.focus(); }));
   addEventListener('keydown',e=>{ if(e.key==='Escape' && links.classList.contains('open')){ closeMenu(); burger.focus(); } });
 })();
 
@@ -932,7 +1093,7 @@ void main(){
   if(RM.matches){ intro.remove(); return; }
   const lift=()=>{ intro.classList.add('up');
     document.querySelectorAll('.hero .reveal').forEach((el,i)=>{ el.style.transitionDelay=(0.15+i*0.08)+'s'; el.classList.add('in'); });
-    setTimeout(()=>intro.remove(),1100); };
+    setTimeout(()=>intro.remove(),1150); };
   const ready = document.fonts ? document.fonts.ready : Promise.resolve();
   let done=false; const go=()=>{ if(done) return; done=true; setTimeout(lift,500); };
   ready.then(go); setTimeout(go,1800); /* hard cap so it never hangs behind GFW */
