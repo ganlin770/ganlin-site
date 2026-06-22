@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>甘霖 · GAN LIN — AI / Agent Engineer</title>
+<meta name="description" content="甘霖 (Gan Lin) — AI / Agent Engineer & technical operator. I ship open-source agent tools and turn them into content developers trust." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300&family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  :root{
+    --bg:#06070c;
+    --ink:#eef1f6;
+    --dim:#9aa3b2;
+    --faint:#6b7280;
+    --line:rgba(255,255,255,.10);
+    --line-2:rgba(255,255,255,.06);
+    --glass:rgba(255,255,255,.035);
+    --glass-2:rgba(255,255,255,.06);
+    --g1:#7fd4ff; --g2:#9b8cff; --g3:#ffd8a8;
+  }
+  html{ scroll-behavior:smooth; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility; }
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:"Inter","PingFang SC","Hiragino Sans GB",-apple-system,sans-serif;
+    line-height:1.6; overflow-x:hidden;
+    cursor:none;
+  }
+  @media (max-width:860px){ body{ cursor:auto; } }
+  a{ color:inherit; text-decoration:none; }
+  ::selection{ background:rgba(155,140,255,.35); color:#fff; }
+
+  /* ---------- WebGL canvas ---------- */
+  #gl{ position:fixed; inset:0; width:100%; height:100%; z-index:-2; display:block; }
+  .noise-fix{ position:fixed; inset:0; z-index:-1; pointer-events:none;
+    background:radial-gradient(120% 80% at 50% 0%, transparent 40%, rgba(6,7,12,.35) 100%); }
+
+  /* ---------- custom cursor ---------- */
+  .cur, .cur-d{ position:fixed; top:0; left:0; border-radius:50%; pointer-events:none; z-index:9999;
+    mix-blend-mode:difference; transform:translate(-50%,-50%); }
+  .cur{ width:34px; height:34px; border:1px solid rgba(255,255,255,.7);
+    transition:width .25s cubic-bezier(.2,.8,.2,1), height .25s cubic-bezier(.2,.8,.2,1), background .25s; }
+  .cur-d{ width:5px; height:5px; background:#fff; }
+  .cur.grow{ width:64px; height:64px; background:rgba(255,255,255,.08); border-color:transparent; }
+  @media (max-width:860px){ .cur,.cur-d{ display:none; } }
+
+  /* ---------- layout ---------- */
+  .wrap{ width:min(1180px, 90vw); margin:0 auto; }
+
+  /* ---------- nav ---------- */
+  nav{ position:fixed; top:0; left:0; right:0; z-index:100;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:22px max(28px,5vw); transition:padding .4s ease, background .4s ease, backdrop-filter .4s ease, border-color .4s ease;
+    border-bottom:1px solid transparent; }
+  nav.scrolled{ padding:14px max(28px,5vw); background:rgba(8,9,14,.55);
+    backdrop-filter:blur(18px) saturate(1.3); -webkit-backdrop-filter:blur(18px) saturate(1.3);
+    border-bottom:1px solid var(--line-2); }
+  .brand{ font-family:"Space Grotesk",sans-serif; font-weight:500; letter-spacing:.14em; font-size:14px; display:flex; gap:10px; align-items:center; }
+  .brand b{ font-weight:600; }
+  .brand .dot{ width:7px; height:7px; border-radius:50%; background:linear-gradient(120deg,var(--g1),var(--g2)); box-shadow:0 0 14px var(--g2); }
+  .nav-links{ display:flex; gap:34px; align-items:center; font-size:13.5px; color:var(--dim); }
+  .nav-links a{ position:relative; transition:color .3s; }
+  .nav-links a::after{ content:""; position:absolute; left:0; bottom:-5px; width:0; height:1px; background:var(--ink); transition:width .35s cubic-bezier(.2,.8,.2,1); }
+  .nav-links a:hover{ color:var(--ink); } .nav-links a:hover::after{ width:100%; }
+  .nav-cta{ border:1px solid var(--line); border-radius:99px; padding:8px 18px; color:var(--ink);
+    font-size:13px; transition:all .3s; }
+  .nav-cta:hover{ background:var(--ink); color:#06070c; border-color:var(--ink); }
+  .burger{ display:none; }
+  @media (max-width:860px){
+    .nav-links{ display:none; }
+    .nav-links.open{ display:flex; position:fixed; inset:0; flex-direction:column; justify-content:center; align-items:center;
+      gap:30px; font-size:24px; background:rgba(6,7,12,.96); backdrop-filter:blur(20px); }
+    .burger{ display:block; z-index:101; width:30px; height:18px; position:relative; cursor:pointer; }
+    .burger span{ position:absolute; left:0; width:100%; height:1.5px; background:var(--ink); transition:.35s; }
+    .burger span:nth-child(1){ top:0; } .burger span:nth-child(2){ top:8px; } .burger span:nth-child(3){ top:16px; }
+    .burger.x span:nth-child(1){ top:8px; transform:rotate(45deg); }
+    .burger.x span:nth-child(2){ opacity:0; }
+    .burger.x span:nth-child(3){ top:8px; transform:rotate(-45deg); }
+  }
+
+  /* ---------- hero ---------- */
+  header.hero{ min-height:100vh; display:flex; flex-direction:column; justify-content:center;
+    padding:120px max(28px,5vw) 90px; position:relative; }
+  .hero .eyebrow{ font-family:"Space Grotesk",sans-serif; font-size:12px; letter-spacing:.34em; text-transform:uppercase;
+    color:var(--dim); display:flex; align-items:center; gap:14px; }
+  .hero .eyebrow::before{ content:""; width:40px; height:1px; background:linear-gradient(90deg,var(--g1),transparent); }
+  .hero h1{ font-family:"Fraunces",serif; font-weight:300; line-height:.96;
+    font-size:clamp(58px, 12vw, 168px); letter-spacing:-.02em; margin:26px 0 6px; }
+  .hero h1 .cn{ font-family:"Fraunces","PingFang SC",serif; }
+  .hero h1 .en{ display:block; background:linear-gradient(110deg,#fff 10%,var(--g1) 45%,var(--g2) 70%,var(--g3) 100%);
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+    font-style:italic; font-weight:300; font-size:.46em; letter-spacing:.01em; margin-top:.06em; }
+  .hero .role{ font-family:"Space Grotesk",sans-serif; font-size:clamp(15px,2.1vw,22px); color:var(--ink);
+    font-weight:400; margin-top:30px; letter-spacing:.01em; }
+  .hero .role b{ font-weight:500; }
+  .hero .sub{ max-width:540px; color:var(--dim); font-size:clamp(14.5px,1.6vw,17px); margin-top:18px; }
+  .hero .sub .cn{ display:block; color:var(--faint); font-size:.92em; margin-top:8px; }
+  .hero .cta-row{ display:flex; gap:16px; margin-top:42px; flex-wrap:wrap; }
+  .btn{ display:inline-flex; align-items:center; gap:10px; padding:14px 26px; border-radius:99px; font-size:14.5px;
+    font-weight:500; transition:all .35s cubic-bezier(.2,.8,.2,1); }
+  .btn.solid{ background:var(--ink); color:#06070c; }
+  .btn.solid:hover{ transform:translateY(-2px); box-shadow:0 14px 40px rgba(155,140,255,.3); }
+  .btn.ghost{ border:1px solid var(--line); color:var(--ink); }
+  .btn.ghost:hover{ border-color:var(--ink); background:var(--glass-2); }
+  .btn .arr{ transition:transform .35s; }
+  .btn:hover .arr{ transform:translate(4px,-4px); }
+  .scroll-hint{ position:absolute; bottom:34px; left:50%; transform:translateX(-50%);
+    font-family:"Space Grotesk",sans-serif; font-size:11px; letter-spacing:.3em; text-transform:uppercase; color:var(--faint);
+    display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .scroll-hint .line{ width:1px; height:48px; background:linear-gradient(var(--dim),transparent); position:relative; overflow:hidden; }
+  .scroll-hint .line::after{ content:""; position:absolute; top:-50%; left:0; width:100%; height:50%; background:var(--ink);
+    animation:drop 2.2s cubic-bezier(.6,0,.2,1) infinite; }
+  @keyframes drop{ 0%{ top:-50%; } 100%{ top:120%; } }
+
+  /* ---------- content scrim ---------- */
+  .content{ position:relative; z-index:1;
+    background:linear-gradient(180deg, rgba(6,7,12,0) 0%, rgba(6,7,12,.72) 6%, rgba(6,7,12,.82) 100%);
+    backdrop-filter:blur(42px) saturate(1.15); -webkit-backdrop-filter:blur(42px) saturate(1.15);
+    border-top:1px solid var(--line-2); }
+  section.panel{ padding:clamp(80px,11vw,150px) 0; }
+  .sec-head{ display:flex; align-items:baseline; gap:18px; margin-bottom:54px; }
+  .sec-num{ font-family:"Space Grotesk",sans-serif; font-size:13px; color:var(--g2); letter-spacing:.1em; }
+  .sec-title{ font-family:"Fraunces",serif; font-weight:300; font-size:clamp(30px,4.6vw,52px); letter-spacing:-.01em; }
+  .sec-title .cn{ font-family:"Fraunces","PingFang SC",serif; color:var(--dim); font-size:.5em; font-style:italic; margin-left:14px; }
+
+  /* ---------- about ---------- */
+  .about-grid{ display:grid; grid-template-columns:1.4fr 1fr; gap:60px; align-items:start; }
+  .about-lead{ font-family:"Fraunces",serif; font-weight:300; font-size:clamp(22px,2.8vw,32px); line-height:1.4; letter-spacing:-.01em; }
+  .about-lead .hl{ background:linear-gradient(110deg,var(--g1),var(--g2)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-style:italic; }
+  .about-body{ color:var(--dim); font-size:15.5px; }
+  .about-body p{ margin-bottom:16px; }
+  .about-body .cn{ color:var(--faint); font-size:14.5px; }
+  .stats{ display:grid; grid-template-columns:1fr 1fr; gap:1px; margin-top:14px; background:var(--line-2);
+    border:1px solid var(--line-2); border-radius:16px; overflow:hidden; }
+  .stat{ background:rgba(8,9,14,.4); padding:22px 20px; }
+  .stat .n{ font-family:"Fraunces",serif; font-size:34px; font-weight:400;
+    background:linear-gradient(120deg,#fff,var(--g1)); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .stat .l{ font-size:12.5px; color:var(--dim); margin-top:4px; letter-spacing:.02em; }
+
+  /* ---------- work ---------- */
+  .work-grid{ display:grid; grid-template-columns:repeat(2,1fr); gap:22px; }
+  .card{ position:relative; border:1px solid var(--line); border-radius:20px; padding:30px 30px 26px;
+    background:var(--glass); overflow:hidden; transition:transform .5s cubic-bezier(.2,.8,.2,1), border-color .5s, background .5s;
+    display:flex; flex-direction:column; min-height:230px; }
+  .card::before{ content:""; position:absolute; inset:0; border-radius:20px; padding:1px; opacity:0; transition:opacity .5s;
+    background:linear-gradient(130deg,var(--g1),var(--g2),transparent 60%);
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude; }
+  .card::after{ content:""; position:absolute; width:340px; height:340px; border-radius:50%; top:var(--my,50%); left:var(--mx,50%);
+    transform:translate(-50%,-50%); background:radial-gradient(circle,rgba(155,140,255,.16),transparent 65%); opacity:0; transition:opacity .4s; pointer-events:none; }
+  .card:hover{ transform:translateY(-6px); border-color:transparent; background:var(--glass-2); }
+  .card:hover::before{ opacity:1; }
+  .card:hover::after{ opacity:1; }
+  .card .ct-top{ display:flex; align-items:center; justify-content:space-between; }
+  .card .ct-name{ font-family:"Space Grotesk",sans-serif; font-size:19px; font-weight:500; }
+  .card .ct-link{ font-size:12px; color:var(--faint); display:inline-flex; gap:6px; align-items:center; transition:color .3s; }
+  .card:hover .ct-link{ color:var(--g1); }
+  .card .ct-desc{ color:var(--dim); font-size:14px; margin-top:14px; flex:1; }
+  .card .ct-desc .cn{ display:block; color:var(--faint); font-size:13px; margin-top:7px; }
+  .card .tags{ display:flex; flex-wrap:wrap; gap:7px; margin-top:18px; }
+  .tag{ font-family:"Space Grotesk",sans-serif; font-size:11px; color:var(--dim); border:1px solid var(--line);
+    border-radius:99px; padding:3px 11px; letter-spacing:.02em; }
+  .card.feat{ grid-column:span 2; min-height:auto; }
+  .card.feat .ct-name{ font-size:22px; }
+  .repo-note{ text-align:center; margin-top:34px; color:var(--faint); font-size:13.5px; }
+  .repo-note a{ color:var(--g1); border-bottom:1px solid rgba(127,212,255,.3); }
+
+  /* ---------- capabilities ---------- */
+  .cap-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line-2);
+    border:1px solid var(--line-2); border-radius:20px; overflow:hidden; }
+  .cap{ background:rgba(8,9,14,.4); padding:30px 28px; transition:background .4s; }
+  .cap:hover{ background:rgba(20,22,32,.6); }
+  .cap .ci{ font-family:"Space Grotesk",sans-serif; font-size:12px; color:var(--g2); letter-spacing:.1em; }
+  .cap .ch{ font-size:17px; font-weight:500; margin:10px 0 6px; }
+  .cap .ch .cn{ color:var(--faint); font-weight:400; font-size:13px; }
+  .cap .cl{ color:var(--dim); font-size:13.5px; line-height:1.6; }
+  .cap .cl b{ color:var(--ink); font-weight:500; }
+
+  /* ---------- contact ---------- */
+  .contact-card{ border:1px solid var(--line); border-radius:28px; padding:clamp(40px,6vw,72px);
+    background:var(--glass); text-align:center; position:relative; overflow:hidden; }
+  .contact-card .glow{ position:absolute; width:520px; height:520px; border-radius:50%; top:-30%; left:50%; transform:translateX(-50%);
+    background:radial-gradient(circle,rgba(155,140,255,.18),transparent 60%); pointer-events:none; }
+  .contact-card h3{ font-family:"Fraunces",serif; font-weight:300; font-size:clamp(30px,5vw,58px); letter-spacing:-.01em; position:relative; }
+  .contact-card h3 .it{ font-style:italic; background:linear-gradient(110deg,var(--g1),var(--g2),var(--g3));
+    -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+  .contact-card p{ color:var(--dim); margin:18px auto 34px; max-width:440px; position:relative; }
+  .contact-row{ display:flex; gap:14px; justify-content:center; flex-wrap:wrap; position:relative; }
+  .clink{ display:inline-flex; align-items:center; gap:10px; border:1px solid var(--line); border-radius:99px;
+    padding:13px 24px; font-size:14.5px; transition:all .35s; }
+  .clink:hover{ background:var(--ink); color:#06070c; border-color:var(--ink); transform:translateY(-2px); }
+
+  /* ---------- footer ---------- */
+  footer{ position:relative; z-index:1; background:#06070c; border-top:1px solid var(--line-2);
+    padding:40px max(28px,5vw); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;
+    color:var(--faint); font-size:13px; }
+  footer .brand{ color:var(--ink); }
+
+  /* ---------- reveal ---------- */
+  .reveal{ opacity:0; transform:translateY(34px); transition:opacity 1s cubic-bezier(.2,.8,.2,1), transform 1s cubic-bezier(.2,.8,.2,1); }
+  .reveal.in{ opacity:1; transform:none; }
+  .reveal.d1{ transition-delay:.08s; } .reveal.d2{ transition-delay:.16s; } .reveal.d3{ transition-delay:.24s; }
+
+  @media (max-width:860px){
+    .about-grid{ grid-template-columns:1fr; gap:36px; }
+    .work-grid{ grid-template-columns:1fr; }
+    .card.feat{ grid-column:span 1; }
+    .cap-grid{ grid-template-columns:1fr; }
+    .hero h1{ font-size:clamp(48px,16vw,90px); }
+  }
+  @media (prefers-reduced-motion:reduce){ *{ animation:none !important; } .reveal{ transition:opacity .4s; transform:none; } }
+</style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<div class="noise-fix"></div>
+<div class="cur"></div><div class="cur-d"></div>
+
+<nav id="nav">
+  <a href="#top" class="brand"><span class="dot"></span><b>GAN&nbsp;LIN</b>&nbsp;甘霖</a>
+  <div class="nav-links" id="navlinks">
+    <a href="#about">About</a>
+    <a href="#work">Work</a>
+    <a href="#capabilities">Capabilities</a>
+    <a href="#contact">Contact</a>
+    <a href="https://github.com/ganlin770" target="_blank" rel="noopener" class="nav-cta">GitHub ↗</a>
+  </div>
+  <div class="burger" id="burger"><span></span><span></span><span></span></div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <div class="eyebrow reveal">Open-source · Agent Engineering · Content Growth</div>
+    <h1 class="reveal d1">
+      <span class="cn">甘霖</span>
+      <span class="en">Gan&nbsp;Lin</span>
+    </h1>
+    <div class="role reveal d2"><b>AI / Agent Engineer</b> &nbsp;×&nbsp; <b>Technical Operator</b></div>
+    <div class="sub reveal d2">
+      I ship open-source agent tools — and turn them into content developers trust.
+      <span class="cn">既 ship 开源 Agent 工具，又把它们讲成开发者信得过的内容。所有作品开源、可点开复现。</span>
+    </div>
+    <div class="cta-row reveal d3">
+      <a href="#work" class="btn solid mag">View Work <span class="arr">↗</span></a>
+      <a href="https://github.com/ganlin770" target="_blank" rel="noopener" class="btn ghost mag">github.com/ganlin770</a>
+    </div>
+  </div>
+  <div class="scroll-hint"><span>Scroll</span><span class="line"></span></div>
+</header>
+
+<div class="content">
+
+  <!-- ABOUT -->
+  <section class="panel" id="about">
+    <div class="wrap">
+      <div class="sec-head reveal"><span class="sec-num">01</span><span class="sec-title">About<span class="cn">关于</span></span></div>
+      <div class="about-grid">
+        <div>
+          <p class="about-lead reveal">A 2026 graduate who taught himself from law into AI engineering in six months — building the rare overlap of <span class="hl">shipping agent tools</span> and <span class="hl">growing the audience</span> that uses them.</p>
+          <div class="about-body" style="margin-top:30px;">
+            <p class="reveal d1">I write LLM eval frameworks from scratch (rule × LLM-as-judge, CI gates, JSONL audit), fine-tune small models into tool-calling routers with PEFT/TRL, and build full-stack apps with Claude Code, Cursor &amp; Codex — then run English dev content across TikTok / X / IG. Because I ship the tools myself, the developer content I make actually holds technical weight.</p>
+            <p class="reveal d2"><span class="cn">懂代码的技术型运营 × 能造工具的 Agent 工程师。从零写 LLM 评测框架、把 0.5B 小模型 LoRA 调成工具路由器、用 AI 编程做全栈并部署上线；同时运营海外英文号。最大的差异化：同一个人既造工具，又能把工具讲成开发者信得过的内容。</span></p>
+          </div>
+        </div>
+        <div class="reveal d1">
+          <div class="stats">
+            <div class="stat"><div class="n">70+</div><div class="l">Claude Code Skills</div></div>
+            <div class="stat"><div class="n">20+</div><div class="l">MCP Servers</div></div>
+            <div class="stat"><div class="n">1000+</div><div class="l">垂类精准粉丝 · 全平台</div></div>
+            <div class="stat"><div class="n">100%</div><div class="l">开源可点开复现</div></div>
+          </div>
+          <div class="about-body" style="margin-top:24px;font-size:14px;">
+            <p>江西财经大学 · 法学本科 · 2022 – 2026<br/>CET-4 / CET-6 · 英文为工作语言<br/>非 CS 科班 · 自学转 AI 工程</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WORK -->
+  <section class="panel" id="work">
+    <div class="wrap">
+      <div class="sec-head reveal"><span class="sec-num">02</span><span class="sec-title">Selected Work<span class="cn">精选作品</span></span></div>
+      <div class="work-grid">
+
+        <a class="card mag reveal" href="https://github.com/ganlin770/promptlab" target="_blank" rel="noopener">
+          <div class="ct-top"><span class="ct-name">promptlab</span><span class="ct-link">GitHub ↗</span></div>
+          <div class="ct-desc">From-scratch LLM eval framework — rule × LLM-as-judge engine, HTML reports + JSONL audit, wired into a CI gate (<code>--min-pass-rate</code>) for regression control.
+            <span class="cn">把「评测」当一等公民：用可复现指标证明 agent 行为，离线 mock 可跑、pytest 覆盖。</span></div>
+          <div class="tags"><span class="tag">Python</span><span class="tag">LLM-as-judge</span><span class="tag">CI gate</span><span class="tag">eval</span></div>
+        </a>
+
+        <a class="card mag reveal d1" href="https://github.com/ganlin770/tool-smith" target="_blank" rel="noopener">
+          <div class="ct-top"><span class="ct-name">tool-smith</span><span class="ct-link">GitHub ↗</span></div>
+          <div class="ct-desc">Fine-tuned Qwen2.5-0.5B into a tool-calling router (PEFT + TRL, LoRA/SFT) + an engineered agent loop: validate → auto-repair retry → frontier fallback → full JSONL logging.
+            <span class="cn">自建 base-vs-tuned 评测：完全正确 4.1%→74.2%，难例 0→76.7%，loss 4.3→0.35。</span></div>
+          <div class="tags"><span class="tag">PEFT/TRL</span><span class="tag">LoRA</span><span class="tag">FastMCP</span><span class="tag">agent loop</span></div>
+        </a>
+
+        <a class="card mag reveal" href="https://github.com/ganlin770/thesis-generator" target="_blank" rel="noopener">
+          <div class="ct-top"><span class="ct-name">thesis-generator</span><span class="ct-link">GitHub ↗</span></div>
+          <div class="ct-desc">A full-stack LLM app shipped to production — 8-stage pipeline on FastAPI with SSE live progress, Claude API + python-docx, deployed on Zeabur.
+            <span class="cn">从 idea 独立 ship 到线上，端到端全栈流水线。</span></div>
+          <div class="tags"><span class="tag">FastAPI</span><span class="tag">Claude API</span><span class="tag">SSE</span><span class="tag">deploy</span></div>
+        </a>
+
+        <a class="card mag reveal d1" href="https://github.com/ganlin770/matlab-viz-mcp" target="_blank" rel="noopener">
+          <div class="ct-top"><span class="ct-name">matlab-viz-mcp</span><span class="ct-link">GitHub ↗</span></div>
+          <div class="ct-desc">An MCP server that lets LLMs generate MATLAB visualizations through the Model Context Protocol.
+            <span class="cn">代表性 MCP 节点，Node MCP SDK 实现。</span></div>
+          <div class="tags"><span class="tag">TypeScript</span><span class="tag">MCP SDK</span><span class="tag">tool calling</span></div>
+        </a>
+
+        <a class="card mag feat reveal" href="https://github.com/ganlin770" target="_blank" rel="noopener">
+          <div class="ct-top"><span class="ct-name">AIGC content pipeline &amp; the 70+ skill matrix</span><span class="ct-link">GitHub ↗</span></div>
+          <div class="ct-desc">An end-to-end production line — script → visuals → cloned-voice TTS (MiniMax / ElevenLabs / F5-TTS) → ffmpeg mux → subtitle QA — driving bilingual dev content across TikTok / X / IG and 小红书 / 抖音 / B站. Built on a self-made matrix of 70+ Claude Code Skills &amp; 20+ MCP Servers, including <b>paper-search-server</b> (Scopus search over Flask).
+            <span class="cn">技术可信度驱动的开发者增长：自建生产线支撑日更，全平台合计垂类精准粉丝 1000+，跑通 选题→生产→分发→复盘→付费 闭环。</span></div>
+          <div class="tags"><span class="tag">TTS clone</span><span class="tag">Remotion</span><span class="tag">ffmpeg</span><span class="tag">multi-agent fan-out</span><span class="tag">DevRel</span></div>
+        </a>
+
+      </div>
+      <p class="repo-note reveal">More open-source, all clickable &amp; reproducible → <a href="https://github.com/ganlin770" target="_blank" rel="noopener">github.com/ganlin770</a></p>
+    </div>
+  </section>
+
+  <!-- CAPABILITIES -->
+  <section class="panel" id="capabilities">
+    <div class="wrap">
+      <div class="sec-head reveal"><span class="sec-num">03</span><span class="sec-title">Capabilities<span class="cn">能力</span></span></div>
+      <div class="cap-grid">
+        <div class="cap reveal"><div class="ci">A1</div><div class="ch">LLM Eval / Reliability <span class="cn">评测与可靠性</span></div><div class="cl"><b>Rule × LLM-as-judge</b> hybrid, CI gate + JSONL audit + HTML reports, failure recovery (validate / repair-retry / frontier fallback), self-built observability.</div></div>
+        <div class="cap reveal d1"><div class="ci">A2</div><div class="ch">MCP / Agent Engineering <span class="cn">Agent 工程</span></div><div class="cl"><b>Tool calling</b>, context &amp; memory (RAG), multi-agent fan-out. 20+ MCP Servers (Node MCP SDK / Python FastMCP) · 70+ Claude Code Skills.</div></div>
+        <div class="cap reveal d2"><div class="ci">A3</div><div class="ch">Model Fine-tuning <span class="cn">模型微调 · 应用层</span></div><div class="cl"><b>PEFT + TRL · LoRA / SFT</b> on Apple Silicon / MPS — Qwen2.5-0.5B tool router (rank 16). Applied engineering, not algorithm research.</div></div>
+        <div class="cap reveal"><div class="ci">A4</div><div class="ch">Full-stack &amp; Deploy <span class="cn">全栈与部署</span></div><div class="cl"><b>Python / FastAPI</b>, Node / TypeScript, React / Next.js, ship to Vercel / Zeabur. Idea → production, solo.</div></div>
+        <div class="cap reveal d1"><div class="ci">A5</div><div class="ch">AI Coding <span class="cn">AI 编程左右手</span></div><div class="cl"><b>Claude Code · Cursor · Codex</b> as daily drivers — read open-source code, reproduce, and ship.</div></div>
+        <div class="cap reveal d2"><div class="ci">A6</div><div class="ch">Content Growth / AIGC <span class="cn">内容增长</span></div><div class="cl"><b>TikTok / X / IG</b> (English), TTS cloning, Remotion, ffmpeg. Plus applied data-analysis &amp; modeling with real paying clients.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="panel" id="contact">
+    <div class="wrap">
+      <div class="contact-card reveal">
+        <div class="glow"></div>
+        <h3>Let's build something <span class="it">that ships.</span></h3>
+        <p>Open to AI / Agent engineering &amp; technical DevRel roles — internship or junior, remote-first. <span style="display:block;color:var(--faint);margin-top:6px;">开放 AI/Agent 工程 · 技术型 DevRel 机会，远程优先，可线下面谈。</span></p>
+        <div class="contact-row">
+          <a class="clink mag" href="mailto:2379286964@qq.com">✉ 2379286964@qq.com</a>
+          <a class="clink mag" href="https://github.com/ganlin770" target="_blank" rel="noopener">⌘ github.com/ganlin770</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <span class="brand"><span class="dot"></span>甘霖 · GAN LIN</span>
+  <span>© 2026 — Designed &amp; built with WebGL. Light field × refractive glass, hand-written shaders.</span>
+</footer>
+
+<script>
+/* ============ WebGL light-field + refractive glass shader ============ */
+(function(){
+  const canvas = document.getElementById('gl');
+  const gl = canvas.getContext('webgl', {antialias:false, alpha:false, powerPreference:'high-performance'});
+  if(!gl){ document.body.style.background='radial-gradient(120% 120% at 50% 0%,#11152a,#06070c)'; return; }
+
+  const vsrc = `attribute vec2 p; void main(){ gl_Position = vec4(p,0.0,1.0); }`;
+  const fsrc = `
+  precision highp float;
+  uniform vec2 uRes; uniform float uTime; uniform vec2 uMouse;
+  float hash(vec2 p){ p=fract(p*vec2(123.34,345.45)); p+=dot(p,p+34.345); return fract(p.x*p.y); }
+  float noise(vec2 p){ vec2 i=floor(p),f=fract(p); vec2 u=f*f*(3.0-2.0*f);
+    float a=hash(i),b=hash(i+vec2(1.,0.)),c=hash(i+vec2(0.,1.)),d=hash(i+vec2(1.,1.));
+    return mix(mix(a,b,u.x),mix(c,d,u.x),u.y); }
+  float fbm(vec2 p){ float v=0.,a=0.55; mat2 m=mat2(1.6,1.2,-1.2,1.6);
+    for(int i=0;i<6;i++){ v+=a*noise(p); p=m*p; a*=0.5; } return v; }
+  vec3 pal(float t){ vec3 a=vec3(0.24,0.27,0.38), b=vec3(0.20,0.22,0.30),
+    c=vec3(1.0,1.0,1.0), d=vec3(0.00,0.10,0.22); return a+b*cos(6.28318*(c*t+d)); }
+  vec3 field(vec2 uv){
+    float t=uTime*0.045; vec2 q=uv*1.05;
+    vec2 w=vec2(fbm(q+vec2(0.0,t)), fbm(q+vec2(3.2,-t)));
+    float n=fbm(q+1.7*w+t*0.4);
+    float flow=fbm(q*1.4-w*1.0+t);
+    vec3 col=pal(0.45+n*0.30+flow*0.18);
+    col*=(0.16+0.55*n);
+    vec2 c1=vec2(0.42*sin(t*1.2), 0.30*cos(t*1.05));
+    vec2 c2=vec2(-0.45*cos(t*0.8), -0.28*sin(t*1.3));
+    col+=pal(0.58)*(0.10/(0.10+dot(uv-c1,uv-c1)))*0.22;
+    col+=pal(0.30)*(0.08/(0.08+dot(uv-c2,uv-c2)))*0.14;
+    col=mix(vec3(0.008,0.011,0.020), col, clamp(0.32+0.62*n,0.0,1.0));
+    return col;
+  }
+  void main(){
+    vec2 frag=gl_FragCoord.xy;
+    vec2 uv=(frag*2.0-uRes)/uRes.y;
+    vec2 m=(uMouse*2.0-1.0); m.x*=uRes.x/uRes.y;
+    vec3 bg=field(uv);
+    vec3 col=bg;
+    vec2 ctr=m*0.30;
+    float R=0.60;
+    vec2 pp=uv-ctr; float d=length(pp);
+    if(d<R){
+      float z=sqrt(max(R*R-d*d,0.0))/R;
+      vec3 nrm=normalize(vec3(pp/R,z));
+      vec3 V=vec3(0.0,0.0,1.0);
+      float disp=0.20;
+      vec3 rR=refract(-V,nrm,1.0/1.46);
+      vec3 rG=refract(-V,nrm,1.0/1.50);
+      vec3 rB=refract(-V,nrm,1.0/1.55);
+      float gR=field(uv+rR.xy*disp).r;
+      float gG=field(uv+rG.xy*disp).g;
+      float gB=field(uv+rB.xy*disp).b;
+      vec3 glass=vec3(gR,gG,gB)*1.06;
+      float fres=pow(1.0-z,3.2);
+      glass+=fres*pal(0.55+uTime*0.03)*0.42;
+      vec3 L=normalize(vec3(0.45,0.7,0.85));
+      vec3 H=normalize(L+V);
+      glass+=pow(max(dot(nrm,H),0.0),70.0)*0.55;
+      glass*=mix(vec3(0.80,0.88,1.05),vec3(1.0),z);
+      float edge=smoothstep(R,R-0.016,d);
+      col=mix(bg,glass,edge);
+      col+=smoothstep(0.020,0.0,abs(d-R))*0.12*pal(0.6);
+    }
+    col+=hash(frag+uTime)*0.045-0.0225;
+    col*=1.0-0.30*dot(uv*0.62,uv*0.62);
+    col=pow(max(col,0.0),vec3(0.98));
+    gl_FragColor=vec4(col,1.0);
+  }`;
+
+  function sh(t,s){ const o=gl.createShader(t); gl.shaderSource(o,s); gl.compileShader(o);
+    if(!gl.getShaderParameter(o,gl.COMPILE_STATUS)) console.warn(gl.getShaderInfoLog(o)); return o; }
+  const prog=gl.createProgram();
+  gl.attachShader(prog,sh(gl.VERTEX_SHADER,vsrc));
+  gl.attachShader(prog,sh(gl.FRAGMENT_SHADER,fsrc));
+  gl.linkProgram(prog); gl.useProgram(prog);
+  const buf=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
+  const loc=gl.getAttribLocation(prog,'p'); gl.enableVertexAttribArray(loc);
+  gl.vertexAttribPointer(loc,2,gl.FLOAT,false,0,0);
+  const uRes=gl.getUniformLocation(prog,'uRes'), uTime=gl.getUniformLocation(prog,'uTime'), uMouse=gl.getUniformLocation(prog,'uMouse');
+
+  let DPR=Math.min(window.devicePixelRatio||1, 1.75);
+  function resize(){ const w=innerWidth, h=innerHeight; canvas.width=w*DPR; canvas.height=h*DPR;
+    canvas.style.width=w+'px'; canvas.style.height=h+'px'; gl.viewport(0,0,canvas.width,canvas.height); }
+  resize(); addEventListener('resize',resize);
+
+  let mx=0.5,my=0.5,tx=0.5,ty=0.5;
+  addEventListener('mousemove',e=>{ tx=e.clientX/innerWidth; ty=1-e.clientY/innerHeight; });
+  addEventListener('touchmove',e=>{ if(e.touches[0]){ tx=e.touches[0].clientX/innerWidth; ty=1-e.touches[0].clientY/innerHeight; } },{passive:true});
+
+  const t0=performance.now(); let raf, running=true;
+  function frame(now){ if(!running){ return; }
+    mx+=(tx-mx)*0.05; my+=(ty-my)*0.05;
+    gl.uniform2f(uRes,canvas.width,canvas.height);
+    gl.uniform1f(uTime,(now-t0)/1000);
+    gl.uniform2f(uMouse,mx,my);
+    gl.drawArrays(gl.TRIANGLES,0,3);
+    raf=requestAnimationFrame(frame);
+  }
+  raf=requestAnimationFrame(frame);
+  // pause when tab hidden
+  document.addEventListener('visibilitychange',()=>{ if(document.hidden){ running=false; cancelAnimationFrame(raf); }
+    else if(!running){ running=true; raf=requestAnimationFrame(frame); } });
+})();
+
+/* ============ custom cursor ============ */
+(function(){
+  const ring=document.querySelector('.cur'), dot=document.querySelector('.cur-d');
+  if(!ring) return;
+  let rx=0,ry=0,dx=0,dy=0;
+  addEventListener('mousemove',e=>{ dx=e.clientX; dy=e.clientY; dot.style.transform=`translate(${dx-2.5}px,${dy-2.5}px)`; });
+  (function loop(){ rx+=(dx-rx)*0.18; ry+=(dy-ry)*0.18; ring.style.transform=`translate(${rx-17}px,${ry-17}px)`; requestAnimationFrame(loop); })();
+  document.querySelectorAll('a,.mag,.burger,.card').forEach(el=>{
+    el.addEventListener('mouseenter',()=>ring.classList.add('grow'));
+    el.addEventListener('mouseleave',()=>ring.classList.remove('grow'));
+  });
+})();
+
+/* ============ magnetic buttons ============ */
+(function(){
+  if(matchMedia('(max-width:860px)').matches) return;
+  document.querySelectorAll('.mag').forEach(el=>{
+    el.addEventListener('mousemove',e=>{ const r=el.getBoundingClientRect();
+      const x=e.clientX-r.left-r.width/2, y=e.clientY-r.top-r.height/2;
+      el.style.transform=`translate(${x*0.18}px,${y*0.22}px)`; });
+    el.addEventListener('mouseleave',()=>{ el.style.transform=''; });
+  });
+  // card spotlight follow
+  document.querySelectorAll('.card').forEach(c=>{
+    c.addEventListener('mousemove',e=>{ const r=c.getBoundingClientRect();
+      c.style.setProperty('--mx',(e.clientX-r.left)+'px'); c.style.setProperty('--my',(e.clientY-r.top)+'px'); });
+  });
+})();
+
+/* ============ reveal + nav ============ */
+(function(){
+  const io=new IntersectionObserver(es=>{ es.forEach(x=>{ if(x.isIntersecting){ x.target.classList.add('in'); io.unobserve(x.target); } }); },{threshold:.12,rootMargin:'0px 0px -40px 0px'});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+  const nav=document.getElementById('nav');
+  addEventListener('scroll',()=>{ nav.classList.toggle('scrolled', scrollY>40); },{passive:true});
+  // mobile menu
+  const burger=document.getElementById('burger'), links=document.getElementById('navlinks');
+  burger.addEventListener('click',()=>{ burger.classList.toggle('x'); links.classList.toggle('open'); });
+  links.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{ burger.classList.remove('x'); links.classList.remove('open'); }));
+})();
+</script>
+</body>
+</html>
