@@ -251,7 +251,7 @@
     text-transform:uppercase; color:var(--dim); display:flex; align-items:center; gap:12px; }
   .id-line::before{ content:""; width:10px; height:10px; background:#c0fe04; border:1px solid rgba(25,27,27,.55); flex:none; }
   .hero h1{ font-family:"Archivo",Inter,"Helvetica Neue",sans-serif; font-weight:900; text-transform:uppercase; color:var(--ink);
-    line-height:.9; font-size:clamp(48px,6.6vw,132px); letter-spacing:-.018em; margin:20px 0 0; margin-left:-.045em; }
+    line-height:.9; font-size:clamp(50px,7.3vw,160px); letter-spacing:-.018em; margin:20px 0 0; margin-left:-.045em; }
   .hero h1 .hl-ln{ display:block; }
   .hero .cta-row{ display:flex; gap:14px; margin-top:clamp(30px,4.5vh,46px); flex-wrap:wrap; }
   .btn{ display:inline-flex; align-items:center; gap:12px; padding:15px 24px; border-radius:8px;
@@ -279,9 +279,9 @@
     text-transform:uppercase; white-space:nowrap; padding:9px 14px; border-radius:9px;
     box-shadow:0 0 0 3px rgba(255,255,255,.92), 0 12px 26px -12px rgba(25,27,27,.4);
     transform:rotate(var(--r,0deg)); animation:stk-float var(--fdur,7s) ease-in-out var(--fdel,0s) infinite; }
-  .stk-lime{ background:#c0fe04; color:var(--ink); --r:-7deg; --fdur:7.5s; top:60vh; right:9%; }
-  .stk-ink{ background:var(--ink); color:var(--on-ink); --r:4deg; --fdur:9s; --fdel:-3s; top:50vh; right:4%; }
-  .stk-arrow{ padding:0; background:none; box-shadow:none; --r:10deg; --fdur:6s; --fdel:-1.5s; top:72vh; right:26%; }
+  .stk-lime{ background:#c0fe04; color:var(--ink); --r:-7deg; --fdur:7.5s; top:24vh; right:16%; }
+  .stk-ink{ background:var(--ink); color:var(--on-ink); --r:4deg; --fdur:9s; --fdel:-3s; top:44vh; right:6%; }
+  .stk-arrow{ padding:0; background:none; box-shadow:none; --r:10deg; --fdur:6s; --fdel:-1.5s; top:29vh; right:33%; }
   .stk-arrow svg{ display:block; width:40px; height:40px; }
   @keyframes stk-float{ 0%,100%{ transform:rotate(var(--r,0deg)) translate3d(0,0,0); } 50%{ transform:rotate(var(--r,0deg)) translate3d(0,-9px,0); } }
   @media (max-width:1100px),(max-height:620px){ .stk{ display:none; } }
@@ -965,45 +965,19 @@ float fbm3(vec2 p){
 }
 
 /* =========================================================================
-   bgField(): the haoqi SKY — cream floor rising to a pale-blue zenith with
-   soft white cloud lumps + ONE analytic diagonal light shaft.
-   STILL EXACTLY ONE fbm2 EVALUATION — n is reused for clouds, grain, tint.
-   uv is aspect-corrected, y-up (uv.y = -1 bottom .. +1 top), so the orb's
-   refracted taps sample this same sky and the glass genuinely bends clouds.
+   bgField(): the cream editorial field. EXACTLY ONE fbm2 evaluation.
+   tint raised 0.15 -> 0.22 so the lens-magnified field has legible structure.
    ========================================================================= */
 vec3 bgField(vec2 uv){
   float t = uTime*0.02*uReduce;
-  /* the ONE noise eval — slow sideways drift reads as cloud movement */
-  float n = fbm2(uv*0.85 + vec2(1.6*t, 0.3*t));
-
-  /* vertical ramp: cream ground -> pale sky-blue wash -> soft zenith */
-  float skyAmt  = smoothstep(-0.55, 0.85, uv.y);
-  vec3  skyPale = vec3(0.75, 0.84, 0.96);
-  vec3  skyDeep = vec3(0.663, 0.788, 0.933);   /* #a9c9ee, sampled from ref */
-  vec3  col = mix(CREAM, skyPale, skyAmt*0.9);
-  col = mix(col, skyDeep, smoothstep(0.45, 1.05, uv.y)*0.6);
-
-  /* old editorial pastel mottle survives ONLY on the cream floor */
+  float n = fbm2(uv*0.85 + vec2(0.0, t));
   vec3 cool = mix(SKY, PERI, 0.5);
   vec3 warm = mix(GOLD, CORAL, 0.5);
   vec3 tint = mix(warm, cool, smoothstep(0.30, 0.72, n));
-  col = mix(col, tint, 0.10*(1.0 - skyAmt)*smoothstep(0.10,0.95,n));
-
-  /* cloud lumps: threshold the SAME n into rounded bright-white masses */
-  float cloud = smoothstep(0.52, 0.80, n);
-  cloud = cloud*cloud*(3.0 - 2.0*cloud);       /* rounder shoulders */
-  col = mix(col, vec3(0.995, 0.998, 1.0), cloud*(0.12 + 0.55*skyAmt));
-
-  /* one analytic diagonal light shaft — rotated coord, ZERO noise evals */
-  float sc   = dot(uv, vec2(0.83, 0.56));      /* ~34deg beam axis */
-  float beam = smoothstep(0.55, 0.95, 0.5 + 0.5*sin(sc*3.0 - t*4.0));
-  col += beam * skyAmt * (0.65 + 0.35*cloud) * vec3(0.055, 0.050, 0.040);
-
-  /* greige grounding kept in the LOWER field only — scrim handoff stays cream */
-  float ground = smoothstep(0.15, 1.4, dot(uv,uv)) * smoothstep(0.55, -0.35, uv.y);
-  col = mix(col, GREIGE, ground*0.55);
-
-  col *= 0.985 + 0.03*n;                       /* micro-lum grain, unchanged */
+  vec3 col = mix(CREAM, tint, 0.22*smoothstep(0.10,0.95,n));
+  float vig = smoothstep(0.2, 1.5, dot(uv,uv));
+  col = mix(col, GREIGE, vig*0.55);
+  col *= 0.985 + 0.03*n;
   return col;
 }
 
@@ -1017,7 +991,7 @@ vec3 thinFilm(float opd, float spread){
   vec3 ph = 6.2831853 * (opd + vec3(-spread, 0.0, spread));
   vec3 c  = 0.5 + 0.5*cos(ph);
   vec3 lo = mix(SKY,  PERI, 0.5);   // cool trough
-  vec3 hi = mix(mix(GOLD, CORAL, 0.5), SKY, 0.16); // warm crest, nudged cooler for the sky
+  vec3 hi = mix(GOLD, CORAL,0.5);   // warm crest
   vec3 spectral = mix(lo, hi, c.gbr*0.5 + c.rgb*0.5);
   spectral = mix(spectral, MINT, c.g*c.g*0.25); // oil-slick green band
   return spectral;
@@ -1085,7 +1059,7 @@ void main(){
       vec2 suv    = baseUV + r1.xy*dispMag*(0.6 + 0.8*rr); // chromatic split rides the rim
       vec3 s   = bgField(suv);
       vec3 tint;
-      if(i==0)      tint = mix(MINT, SKY, 0.35); // cooler first tap under a blue sky
+      if(i==0)      tint = MINT;
       else if(i==1) tint = SKY;
       else          tint = PERI;
       vec3 wsp = mix(vec3(1.0), tint, (0.32 + 0.65*fres));
