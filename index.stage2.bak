@@ -493,131 +493,8 @@
   .contact-h .it{ font-style:normal; }
   .btn, .clink{ font-family:var(--font-mono); text-transform:uppercase; letter-spacing:.1em; font-weight:700; font-size:12.5px; }
   .repo-note{ font-family:var(--font-mono); font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; }
-  /* ================= work-caps: print-sheet WORK plates + spec-sheet CAPABILITIES ================= */
-  #work .work-grid{ grid-template-columns:1fr 1fr; column-gap:0; row-gap:clamp(48px,6vw,80px); border-top:1px solid var(--line); }
-  #work .work-grid > .card:nth-child(2n){ border-left:1px solid var(--line); }
-  #work .work-grid > .card{ padding-left:0; padding-right:0; }
-  #work .work-grid > .card:nth-child(odd):not(.feat){ padding-right:clamp(22px,2.6vw,40px); }
-  #work .work-grid > .card:nth-child(2n){ padding-left:clamp(22px,2.6vw,40px); }
-  #work .work-grid > .card:nth-child(2):not(.feat),
-  #work .work-grid > .card:nth-child(4):not(.feat){ margin-top:clamp(28px,4vw,56px); }
-  #work .card{ border:0; border-radius:0; padding-top:0; padding-bottom:0; min-height:0; background:transparent; box-shadow:none; overflow:visible; transition:transform .5s var(--ease-out); }
-  #work .card::before, #work .card::after{ display:none !important; content:none; }
-  #work .card:hover{ transform:none; background:transparent; box-shadow:none; border-color:var(--line); }
-  #work .card:hover:nth-child(2n){ border-left-color:var(--line); }
-  #work .card .vbanner{ position:relative; width:100%; margin:0 0 0 0; border-radius:0; background:var(--bg-2); border:1px solid var(--line); box-shadow:none; transition:background .45s var(--ease-out), border-color .45s; }
-  #work .card:hover .vbanner{ background:#e9e7e0; border-color:rgba(25,27,27,.2); }
-  #work .card .vbanner > svg{ padding:14px 16px 8px; }
-  #work .cat-chip{ position:absolute; top:0; right:0; z-index:2; font-family:var(--font-mono); font-weight:700; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink); background:var(--lime); padding:5px 10px 4px; border-left:1px solid rgba(25,27,27,.5); border-bottom:1px solid rgba(25,27,27,.5); line-height:1; white-space:nowrap; }
-  #work .card .ct-top{ display:flex; align-items:baseline; justify-content:space-between; gap:14px; margin-top:0; padding:13px 0 12px; border-bottom:1px solid var(--line); }
-  #work .card .ct-name{ font-family:var(--font-mono); font-weight:700; font-size:14px; letter-spacing:.06em; text-transform:uppercase; color:var(--ink); flex:0 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  #work .card.feat .ct-name{ font-size:16px; white-space:normal; }
-  #work .card .ct-year{ font-family:var(--font-mono); font-weight:400; font-size:11px; letter-spacing:.14em; color:var(--faint); flex:0 0 auto; margin:0 auto; }
-  #work .card .ct-link{ font-family:var(--font-mono); font-weight:700; font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--dim); flex:0 0 auto; transition:color .3s; }
-  #work .card:hover .ct-link{ color:var(--ink); }
-  #work .card:hover .ct-link span{ text-decoration:underline; text-underline-offset:3px; text-decoration-thickness:1px; }
-  #work .card .ct-desc{ font-family:var(--font-body); color:var(--dim); font-size:13.5px; line-height:1.6; letter-spacing:.005em; margin-top:14px; flex:0 1 auto; }
-  #work .card .ct-desc b{ color:var(--ink); font-weight:600; }
-  #work .card .tags{ display:flex; flex-wrap:wrap; gap:7px; margin-top:16px; }
-  #work .card .tag{ font-family:var(--font-mono); font-size:10px; font-weight:400; letter-spacing:.1em; text-transform:uppercase; color:var(--dim); border:1px solid var(--line); border-radius:0; padding:3px 9px 2px; background:transparent; }
-  #work .card .tag.coding{ background:var(--lime); color:var(--ink); font-weight:700; border-color:rgba(25,27,27,.5); }
-  #work .work-grid > .card.feat{ grid-column:1 / -1; border-left:0; padding:0; margin-top:0; padding-top:clamp(40px,5vw,64px); border-top:1px solid var(--line); }
-  @media (max-width:860px){
-    #work .work-grid{ grid-template-columns:1fr; }
-    #work .work-grid > .card, #work .work-grid > .card:nth-child(odd):not(.feat),
-    #work .work-grid > .card:nth-child(2n){ padding-left:0; padding-right:0; border-left:0; margin-top:0; }
-    #work .work-grid > .card.feat{ padding-top:clamp(34px,8vw,52px); }
-  }
-  #capabilities .cap-grid{ display:block; grid-template-columns:none; gap:0; border-top:1px solid var(--line); }
-  #capabilities .cap{ display:grid; align-items:baseline; grid-template-columns:auto minmax(0,15rem) 1fr minmax(0,16rem); column-gap:clamp(16px,2.4vw,40px); row-gap:4px; padding:22px 12px 20px; border-radius:0; border-top:0; border-bottom:1px solid var(--line); background:transparent; transition:background .35s var(--ease-out); }
-  #capabilities .cap:hover{ background:var(--bg-2); transform:none; }
-  #capabilities .cap .ci{ grid-row:1; grid-column:1; align-self:baseline; font-family:var(--font-mono); font-weight:700; font-size:11px; letter-spacing:.1em; color:var(--ink); background:var(--lime); padding:3px 8px 2px; line-height:1; filter:none; }
-  #capabilities .cap .ch{ grid-row:1; grid-column:2; margin:0; align-self:baseline; font-family:var(--font-display); font-weight:700; text-transform:uppercase; font-size:clamp(15px,1.5vw,18px); letter-spacing:-.005em; line-height:1.1; color:var(--ink); }
-  #capabilities .cap .cl{ grid-row:1; grid-column:3; align-self:baseline; font-family:var(--font-body); color:var(--dim); font-size:13px; line-height:1.55; letter-spacing:.005em; }
-  #capabilities .cap .cl b{ color:var(--ink); font-weight:600; }
-  #capabilities .cap .ck{ grid-row:1; grid-column:4; align-self:baseline; text-align:right; font-family:var(--font-mono); font-weight:400; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--faint); line-height:1.6; }
-  @media (max-width:960px){
-    #capabilities .cap{ grid-template-columns:auto 1fr; }
-    #capabilities .cap .ch{ grid-column:2; }
-    #capabilities .cap .cl{ grid-column:2; grid-row:2; margin-top:6px; }
-    #capabilities .cap .ck{ grid-column:2; grid-row:3; text-align:left; margin-top:8px; }
-  }
-  @media (max-width:560px){
-    #capabilities .cap{ grid-template-columns:1fr; padding:20px 4px 18px; }
-    #capabilities .cap .ci{ grid-column:1; grid-row:1; justify-self:start; }
-    #capabilities .cap .ch{ grid-column:1; grid-row:2; margin-top:10px; }
-    #capabilities .cap .cl{ grid-column:1; grid-row:3; }
-    #capabilities .cap .ck{ grid-column:1; grid-row:4; }
-  }
-  @media (prefers-reduced-transparency: reduce){
-    #capabilities .cap{ background:transparent; }
-    #capabilities .cap:hover{ background:var(--bg-2); }
-    #work .card, #work .card .vbanner{ background:var(--bg-2); }
-  }
-  @media (hover:none),(pointer:coarse){
-    #work .card:hover, #work .card:active{ transform:none; background:transparent; }
-    #capabilities .cap:active{ background:var(--bg-2); }
-  }
   footer{ font-family:var(--font-mono); font-size:11px; letter-spacing:.1em; text-transform:uppercase;
-    padding-bottom:max(72px, calc(env(safe-area-inset-bottom) + 48px)); }  /* ================= manifesto-footer: scoped dark band + mono instrument rail ================= */
-  /* Full-bleed dark section; solid bg so it cleanly overlays the fixed WebGL canvas. Body stays cream. */
-  .manifesto{ position:relative; z-index:1; isolation:isolate; overflow:hidden;
-    background:linear-gradient(180deg,#0b1c3a 0%,#081328 46%,#05070c 100%);
-    color:#fff; padding:clamp(96px,15vw,168px) max(28px,5vw); }
-  .manifesto .mf-streaks{ position:absolute; inset:0; width:100%; height:100%; z-index:0;
-    pointer-events:none; }
-  /* soft center bloom + edge vignette, done with static gradients (no filter, no animation) */
-  .manifesto::before{ content:""; position:absolute; inset:0; z-index:0; pointer-events:none;
-    background:radial-gradient(60% 55% at 50% 50%, rgba(141,203,255,.10), transparent 70%); }
-  .manifesto::after{ content:""; position:absolute; inset:0; z-index:0; pointer-events:none;
-    background:radial-gradient(120% 100% at 50% 40%, transparent 52%, rgba(5,7,12,.72) 100%); }
-  .mf-inner{ position:relative; z-index:1; max-width:1100px; margin:0 auto; }
-  .mf-eyebrow{ font-family:var(--font-mono); font-size:11px; letter-spacing:.28em; text-transform:uppercase;
-    color:#c0fe04; margin-bottom:clamp(24px,4vw,44px); }
-  .mf-title{ font-family:var(--font-display); font-weight:900; text-transform:uppercase; color:#fff;
-    letter-spacing:-.02em; line-height:.9; font-size:clamp(38px,8.4vw,116px); margin:0; }
-  .mf-title .mf-line{ display:block; }
-  .mf-title .mf-line2{ color:#8dcbff; }
-  .mf-principles{ list-style:none; margin:clamp(40px,6vw,72px) 0 0; padding:0;
-    display:flex; flex-direction:column; gap:clamp(12px,1.8vw,20px); max-width:760px; }
-  .mf-p{ font-family:var(--font-mono); font-size:clamp(13px,1.7vw,16px); letter-spacing:.02em;
-    line-height:1.5; color:rgba(255,255,255,.72); padding-left:26px; position:relative; }
-  .mf-p::before{ content:"\2192"; position:absolute; left:0; top:0; color:#c0fe04; opacity:.9; }
-  .mf-p:nth-child(1){ margin-left:0; } .mf-p:nth-child(2){ margin-left:clamp(0px,4vw,64px); }
-  .mf-p:nth-child(3){ margin-left:clamp(0px,7vw,120px); } .mf-p:nth-child(4){ margin-left:clamp(0px,10vw,176px); }
-  /* scoped reveal: the giant caps wipe up per line, principles fade+rise. No new JS — rides the .reveal IO. */
-  .js .mf-title.reveal .mf-line{ opacity:0; transform:translate3d(0,26px,0); }
-  .mf-title.reveal.in .mf-line{ opacity:1; transform:none;
-    transition:opacity .8s var(--ease-out), transform .9s var(--ease-out); }
-  .mf-title.reveal.in .mf-line2{ transition-delay:.12s; }
-  .js .mf-p.reveal{ opacity:0; transform:translate3d(0,14px,0); }
-  .mf-p.reveal.in{ opacity:1; transform:none;
-    transition:opacity .7s var(--ease-out), transform .8s var(--ease-out); }
-  .mf-p.reveal.d1{ transition-delay:.08s; } .mf-p.reveal.d2{ transition-delay:.16s; } .mf-p.reveal.d3{ transition-delay:.24s; }
-  @media (prefers-reduced-motion:reduce){
-    .js .mf-title.reveal .mf-line, .js .mf-p.reveal{ opacity:1 !important; transform:none !important; }
-  }
-  @media (max-width:860px){
-    .mf-p{ margin-left:0 !important; }
-  }
-  /* ---------- footer: mono instrument rail ---------- */
-  footer.rail{ display:block; padding:clamp(40px,6vw,64px) max(28px,5vw);
     padding-bottom:max(72px, calc(env(safe-area-inset-bottom) + 48px)); }
-  .rail-top{ display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:14px 28px;
-    padding-bottom:22px; border-bottom:1px solid var(--line); }
-  .rail-top a{ color:var(--ink); position:relative; }
-  .rail-top a::after{ content:""; position:absolute; left:0; bottom:-3px; width:100%; height:1px; background:var(--lime);
-    transform:scaleX(0); transform-origin:0 50%; transition:transform .4s var(--ease-out); }
-  .rail-top a:hover::after, .rail-top a:focus-visible::after{ transform:scaleX(1); }
-  .rail-bot{ display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:10px 28px;
-    padding-top:22px; color:var(--faint); }
-  .rail-bot .rail-wm{ color:var(--ink); display:inline-flex; align-items:center; gap:9px; }
-  .rail-bot .rail-wm .dot{ width:8px; height:8px; background:var(--lime); border:1px solid rgba(25,27,27,.28); flex:none; }
-  /* ---------- contact finale: aria-hidden lime crosshair accents (echo the HUD +) ---------- */
-  .contact-card .cc-mark{ position:absolute; z-index:2; font-family:var(--font-mono); font-weight:700;
-    color:var(--lime); -webkit-text-stroke:.4px rgba(25,27,27,.55); pointer-events:none; line-height:1; }
-  .contact-card .cc-mark.tl{ top:16px; left:18px; font-size:16px; }
-  .contact-card .cc-mark.br{ bottom:16px; right:18px; font-size:11px; letter-spacing:.14em; }
 </style>
 </head>
 <body>
@@ -734,7 +611,7 @@
       <div class="work-grid">
 
         <a class="card reveal" href="https://github.com/ganlin770/promptlab" target="_blank" rel="noopener" aria-label="promptlab on GitHub, opens in new tab">
-          <div class="vbanner" aria-hidden="false"><span class="cat-chip" aria-hidden="true">Eval Framework</span><svg role="img" aria-labelledby="pl-t pl-d" viewBox="0 0 640 180" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">
+          <div class="vbanner" aria-hidden="false"><svg role="img" aria-labelledby="pl-t pl-d" viewBox="0 0 640 180" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">
 <title id="pl-t">PromptLab LLM evaluation framework</title>
 <desc id="pl-d">Metric bars and a pass-rate gauge feed a rule and LLM-judge scorer into a CI gate node with a check mark labeled dash-dash min-pass-rate, emitting a JSONL report.</desc>
 <g fill="none" stroke="#191b1b" stroke-width="1.4" stroke-opacity="0.8" stroke-linecap="round" stroke-linejoin="round">
@@ -778,14 +655,14 @@
 </g>
 <text x="500" y="118" font-family="monospace" font-size="9" fill="#191b1b" letter-spacing="0.6">--min-pass-rate</text>
 </svg></div>
-          <div class="ct-top"><h3 class="ct-name">promptlab</h3><span class="ct-year" aria-hidden="true">2025</span><span class="ct-link"><span aria-hidden="true">GitHub ↗</span></span></div>
+          <div class="ct-top"><h3 class="ct-name">promptlab</h3><span class="ct-link"><span aria-hidden="true">GitHub ↗</span></span></div>
           <div class="ct-desc">From-scratch LLM eval framework — rule × LLM-as-judge engine, HTML reports + JSONL audit, wired into a CI gate (<code>--min-pass-rate</code>) for regression control.
             </div>
-          <div class="tags"><span class="tag coding">Coding</span><span class="tag">Python</span><span class="tag">LLM-as-judge</span><span class="tag">CI gate</span><span class="tag">eval</span></div>
+          <div class="tags"><span class="tag">Python</span><span class="tag">LLM-as-judge</span><span class="tag">CI gate</span><span class="tag">eval</span></div>
         </a>
 
         <a class="card reveal d1" href="https://github.com/ganlin770/tool-smith" target="_blank" rel="noopener" aria-label="tool-smith on GitHub, opens in new tab">
-          <div class="vbanner" aria-hidden="false"><span class="cat-chip" aria-hidden="true">Fine-Tuning</span><svg role="img" aria-labelledby="ts-t ts-d" viewBox="0 0 640 180" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">
+          <div class="vbanner" aria-hidden="false"><svg role="img" aria-labelledby="ts-t ts-d" viewBox="0 0 640 180" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">
 <title id="ts-t">Tool-Smith tool-calling router</title>
 <desc id="ts-d">A prompt box feeds a fine-tuned 0.5B model node that branches to three tool nodes; a before-and-after bar pair shows tool-call accuracy rising from 4.1 percent to 74.2 percent.</desc>
 <g fill="none" stroke="#191b1b" stroke-width="1.4" stroke-opacity="0.8" stroke-linecap="round" stroke-linejoin="round">
@@ -830,14 +707,14 @@
 <text x="554" y="68">74.2%</text>
 </g>
 </svg></div>
-          <div class="ct-top"><h3 class="ct-name">tool-smith</h3><span class="ct-year" aria-hidden="true">2025</span><span class="ct-link"><span aria-hidden="true">GitHub ↗</span></span></div>
+          <div class="ct-top"><h3 class="ct-name">tool-smith</h3><span class="ct-link"><span aria-hidden="true">GitHub ↗</span></span></div>
           <div class="ct-desc">Fine-tuned Qwen2.5-0.5B into a tool-calling router (PEFT + TRL, LoRA/SFT) — <b>fully-correct tool calls 4.1% → 74.2%, hard cases 0 → 76.7%</b> on a self-built base-vs-tuned eval. Wrapped in an engineered agent loop: validate → auto-repair retry → frontier fallback → full JSONL logging.
             </div>
-          <div class="tags"><span class="tag coding">Coding</span><span class="tag">PEFT/TRL</span><span class="tag">LoRA</span><span class="tag">FastMCP</span><span class="tag">agent loop</span></div>
+          <div class="tags"><span class="tag">PEFT/TRL</span><span class="tag">LoRA</span><span class="tag">FastMCP</span><span class="tag">agent loop</span></div>
         </a>
 
         <a class="card reveal" href="https://github.com/ganlin770/thesis-generator" target="_blank" rel="noopener" aria-label="thesis-generator on GitHub, opens in new tab">
-          <div class="vbanner" aria-hidden="false"><span class="cat-chip" aria-hidden="true">Full-Stack</span><svg role="img" aria-labelledby="tg-t tg-d" viewBox="0 0 640 180" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">
+          <div class="vbanner" aria-hidden="false"><svg role="img" aria-labelledby="tg-t tg-d" viewBox="0 0 640 180" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">
 <title id="tg-t">Thesis Generator FastAPI pipeline</title>
 <desc id="tg-d">Eight numbered stage nodes connected left to right over a server-sent-events stream rail, ending in a DOCX output document glyph.</desc>
 <g fill="none" stroke="#191b1b" stroke-width="1.4" stroke-opacity="0.8" stroke-linecap="round" stroke-linejoin="round">
@@ -879,14 +756,14 @@
 <text x="556" y="142" fill="#191b1b">DOCX</text>
 </g>
 </svg></div>
-          <div class="ct-top"><h3 class="ct-name">thesis-generator</h3><span class="ct-year" aria-hidden="true">2025</span><span class="ct-link"><span aria-hidden="true">GitHub ↗</span></span></div>
+          <div class="ct-top"><h3 class="ct-name">thesis-generator</h3><span class="ct-link"><span aria-hidden="true">GitHub ↗</span></span></div>
           <div class="ct-desc">A full-stack LLM app shipped to production — 8-stage pipeline on FastAPI with SSE live progress, Claude API + python-docx, deployed on Zeabur.
             </div>
-          <div class="tags"><span class="tag coding">Coding</span><span class="tag">FastAPI</span><span class="tag">Claude API</span><span class="tag">SSE</span><span class="tag">deploy</span></div>
+          <div class="tags"><span class="tag">FastAPI</span><span class="tag">Claude API</span><span class="tag">SSE</span><span class="tag">deploy</span></div>
         </a>
 
         <a class="card reveal d1" href="https://github.com/ganlin770/matlab-viz-mcp" target="_blank" rel="noopener" aria-label="matlab-viz-mcp on GitHub, opens in new tab">
-          <div class="vbanner" aria-hidden="false"><span class="cat-chip" aria-hidden="true">MCP Server</span><svg role="img" aria-labelledby="mm-t mm-d" viewBox="0 0 640 180" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">
+          <div class="vbanner" aria-hidden="false"><svg role="img" aria-labelledby="mm-t mm-d" viewBox="0 0 640 180" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">
 <title id="mm-t">MATLAB Viz MCP server node graph</title>
 <desc id="mm-d">An LLM node connects bidirectionally to an MCP Server node over a link labeled Model Context Protocol, which connects bidirectionally to a MATLAB node.</desc>
 <g fill="none" stroke="#191b1b" stroke-width="1.4" stroke-opacity="0.8" stroke-linecap="round" stroke-linejoin="round">
@@ -921,14 +798,14 @@
 </g>
 <text x="170" y="78" font-family="monospace" font-size="9" fill="#51544f" letter-spacing="0.6">Model Context Protocol</text>
 </svg></div>
-          <div class="ct-top"><h3 class="ct-name">matlab-viz-mcp</h3><span class="ct-year" aria-hidden="true">2025</span><span class="ct-link"><span aria-hidden="true">GitHub ↗</span></span></div>
+          <div class="ct-top"><h3 class="ct-name">matlab-viz-mcp</h3><span class="ct-link"><span aria-hidden="true">GitHub ↗</span></span></div>
           <div class="ct-desc">An MCP server that hands LLMs a MATLAB visualization toolbelt — generate, run, and return plots over a clean tool-calling interface.
             </div>
-          <div class="tags"><span class="tag coding">Coding</span><span class="tag">TypeScript</span><span class="tag">MCP SDK</span><span class="tag">tool calling</span></div>
+          <div class="tags"><span class="tag">TypeScript</span><span class="tag">MCP SDK</span><span class="tag">tool calling</span></div>
         </a>
 
         <a class="card feat reveal" href="https://github.com/ganlin770" target="_blank" rel="noopener" aria-label="AIGC content pipeline and the 70+ skill matrix on GitHub, opens in new tab">
-          <div class="vbanner" aria-hidden="false"><span class="cat-chip" aria-hidden="true">AIGC Pipeline</span><svg role="img" aria-labelledby="ag-t ag-d" viewBox="0 0 640 180" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">
+          <div class="vbanner" aria-hidden="false"><svg role="img" aria-labelledby="ag-t ag-d" viewBox="0 0 640 180" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">
 <title id="ag-t">AIGC content pipeline</title>
 <desc id="ag-d">A five-step flow from script to visuals to cloned TTS to ffmpeg mux to subtitle QA, beside a small node grid hinting seventy-plus skills and twenty-plus MCP servers.</desc>
 <g fill="none" stroke="#191b1b" stroke-width="1.4" stroke-opacity="0.8" stroke-linecap="round" stroke-linejoin="round">
@@ -970,7 +847,7 @@
 <text x="546" y="170" font-size="9">20+ MCP</text>
 </g>
 </svg></div>
-          <div class="ct-top"><h3 class="ct-name">AIGC content pipeline &amp; the 70+ skill matrix</h3><span class="ct-year" aria-hidden="true">2024–26</span><span class="ct-link"><span aria-hidden="true">GitHub ↗</span></span></div>
+          <div class="ct-top"><h3 class="ct-name">AIGC content pipeline &amp; the 70+ skill matrix</h3><span class="ct-link"><span aria-hidden="true">GitHub ↗</span></span></div>
           <div class="ct-desc">An end-to-end production line — script → visuals → cloned-voice TTS (MiniMax / ElevenLabs / F5-TTS) → ffmpeg mux → subtitle QA — driving bilingual dev content across TikTok / X / IG and Xiaohongshu / Douyin / Bilibili — <b>1000+ targeted developer followers</b> across platforms. Built on a self-made matrix of 70+ Claude Code Skills &amp; 20+ MCP Servers, including <b>paper-search-server</b> (Scopus search over Flask).
             </div>
           <div class="tags"><span class="tag">TTS clone</span><span class="tag">Remotion</span><span class="tag">ffmpeg</span><span class="tag">multi-agent fan-out</span><span class="tag">DevRel</span></div>
@@ -986,93 +863,13 @@
     <div class="wrap">
       <div class="sec-head reveal"><span class="sec-num" aria-hidden="true">03</span><h2 id="cap-h" class="sec-title">Capabilities</h2></div>
       <div class="cap-grid">
-        <div class="cap reveal"><div class="ci" aria-hidden="true">A1</div><h3 class="ch">LLM Eval / Reliability</h3><div class="cl"><b>Rule × LLM-as-judge</b> hybrid, CI gate + JSONL audit + HTML reports, failure recovery (validate / repair-retry / frontier fallback), self-built observability.</div><div class="ck" aria-hidden="true">CI gate · JSONL · HTML report</div></div>
-        <div class="cap reveal d1"><div class="ci" aria-hidden="true">A2</div><h3 class="ch">MCP / Agent Engineering</h3><div class="cl"><b>Tool calling</b>, context &amp; memory (RAG), multi-agent fan-out. 20+ MCP Servers (Node MCP SDK / Python FastMCP) · 70+ Claude Code Skills.</div><div class="ck" aria-hidden="true">MCP SDK · FastMCP · fan-out</div></div>
-        <div class="cap reveal d2"><div class="ci" aria-hidden="true">A3</div><h3 class="ch">Model Fine-tuning</h3><div class="cl"><b>PEFT + TRL · LoRA / SFT</b> on Apple Silicon / MPS — Qwen2.5-0.5B tool router (rank 16). Applied engineering, not algorithm research.</div><div class="ck" aria-hidden="true">PEFT · LoRA · TRL · MPS</div></div>
-        <div class="cap reveal"><div class="ci" aria-hidden="true">A4</div><h3 class="ch">Full-stack &amp; Deploy</h3><div class="cl"><b>Python / FastAPI</b>, Node / TypeScript, React / Next.js, ship to Vercel / Zeabur. Idea → production, solo.</div><div class="ck" aria-hidden="true">FastAPI · Node · React</div></div>
-        <div class="cap reveal d1"><div class="ci" aria-hidden="true">A5</div><h3 class="ch">AI Coding</h3><div class="cl"><b>Claude Code · Cursor · Codex</b> as daily drivers — read open-source code, reproduce, and ship.</div><div class="ck" aria-hidden="true">Claude Code · Cursor · Codex</div></div>
-        <div class="cap reveal d2"><div class="ci" aria-hidden="true">A6</div><h3 class="ch">Content Growth / AIGC</h3><div class="cl"><b>TikTok / X / IG</b> (English), TTS cloning, Remotion, ffmpeg. Plus applied data-analysis &amp; modeling with real paying clients.</div><div class="ck" aria-hidden="true">TTS · Remotion · ffmpeg</div></div>
+        <div class="cap reveal"><div class="ci" aria-hidden="true">A1</div><h3 class="ch">LLM Eval / Reliability</h3><div class="cl"><b>Rule × LLM-as-judge</b> hybrid, CI gate + JSONL audit + HTML reports, failure recovery (validate / repair-retry / frontier fallback), self-built observability.</div></div>
+        <div class="cap reveal d1"><div class="ci" aria-hidden="true">A2</div><h3 class="ch">MCP / Agent Engineering</h3><div class="cl"><b>Tool calling</b>, context &amp; memory (RAG), multi-agent fan-out. 20+ MCP Servers (Node MCP SDK / Python FastMCP) · 70+ Claude Code Skills.</div></div>
+        <div class="cap reveal d2"><div class="ci" aria-hidden="true">A3</div><h3 class="ch">Model Fine-tuning</h3><div class="cl"><b>PEFT + TRL · LoRA / SFT</b> on Apple Silicon / MPS — Qwen2.5-0.5B tool router (rank 16). Applied engineering, not algorithm research.</div></div>
+        <div class="cap reveal"><div class="ci" aria-hidden="true">A4</div><h3 class="ch">Full-stack &amp; Deploy</h3><div class="cl"><b>Python / FastAPI</b>, Node / TypeScript, React / Next.js, ship to Vercel / Zeabur. Idea → production, solo.</div></div>
+        <div class="cap reveal d1"><div class="ci" aria-hidden="true">A5</div><h3 class="ch">AI Coding</h3><div class="cl"><b>Claude Code · Cursor · Codex</b> as daily drivers — read open-source code, reproduce, and ship.</div></div>
+        <div class="cap reveal d2"><div class="ci" aria-hidden="true">A6</div><h3 class="ch">Content Growth / AIGC</h3><div class="cl"><b>TikTok / X / IG</b> (English), TTS cloning, Remotion, ffmpeg. Plus applied data-analysis &amp; modeling with real paying clients.</div></div>
       </div>
-    </div>
-  </section>
-
-  <!-- MANIFESTO (scoped dark band; static svg streaks; body stays cream) -->
-  <section class="manifesto" id="manifesto" aria-labelledby="mf-h">
-    <svg class="mf-streaks" viewBox="0 0 1200 760" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
-      <line x1="600" y1="380" x2="612" y2="96"  stroke="#8dcbff" stroke-width="1"   opacity=".30"/>
-      <line x1="600" y1="380" x2="648" y2="72"  stroke="#5e53e3" stroke-width="1"   opacity=".22"/>
-      <line x1="600" y1="380" x2="690" y2="120" stroke="#8dcbff" stroke-width="1.5" opacity=".16"/>
-      <line x1="600" y1="380" x2="744" y2="60"  stroke="#c0fe04" stroke-width="1"   opacity=".26"/>
-      <line x1="600" y1="380" x2="808" y2="132" stroke="#8dcbff" stroke-width="1"   opacity=".18"/>
-      <line x1="600" y1="380" x2="876" y2="88"  stroke="#5e53e3" stroke-width="1"   opacity=".28"/>
-      <line x1="600" y1="380" x2="940" y2="176" stroke="#8dcbff" stroke-width="1"   opacity=".14"/>
-      <line x1="600" y1="380" x2="1012" y2="120" stroke="#c0fe04" stroke-width="1"  opacity=".20"/>
-      <line x1="600" y1="380" x2="1088" y2="204" stroke="#8dcbff" stroke-width="1.5" opacity=".12"/>
-      <line x1="600" y1="380" x2="1152" y2="156" stroke="#5e53e3" stroke-width="1"  opacity=".24"/>
-      <line x1="600" y1="380" x2="1176" y2="272" stroke="#8dcbff" stroke-width="1"  opacity=".16"/>
-      <line x1="600" y1="380" x2="1188" y2="356" stroke="#c0fe04" stroke-width="1"  opacity=".22"/>
-      <line x1="600" y1="380" x2="1160" y2="428" stroke="#8dcbff" stroke-width="1"  opacity=".18"/>
-      <line x1="600" y1="380" x2="1104" y2="512" stroke="#5e53e3" stroke-width="1.5" opacity=".14"/>
-      <line x1="600" y1="380" x2="1044" y2="576" stroke="#8dcbff" stroke-width="1"  opacity=".26"/>
-      <line x1="600" y1="380" x2="972" y2="640"  stroke="#c0fe04" stroke-width="1"  opacity=".18"/>
-      <line x1="600" y1="380" x2="900" y2="596"  stroke="#8dcbff" stroke-width="1"  opacity=".20"/>
-      <line x1="600" y1="380" x2="836" y2="672"  stroke="#5e53e3" stroke-width="1"  opacity=".24"/>
-      <line x1="600" y1="380" x2="760" y2="620"  stroke="#8dcbff" stroke-width="1.5" opacity=".12"/>
-      <line x1="600" y1="380" x2="696" y2="700"  stroke="#8dcbff" stroke-width="1"  opacity=".16"/>
-      <line x1="600" y1="380" x2="624" y2="656"  stroke="#c0fe04" stroke-width="1"  opacity=".28"/>
-      <line x1="600" y1="380" x2="588" y2="712"  stroke="#8dcbff" stroke-width="1"  opacity=".18"/>
-      <line x1="600" y1="380" x2="540" y2="660"  stroke="#5e53e3" stroke-width="1"  opacity=".22"/>
-      <line x1="600" y1="380" x2="468" y2="704"  stroke="#8dcbff" stroke-width="1"  opacity=".14"/>
-      <line x1="600" y1="380" x2="396" y2="640"  stroke="#c0fe04" stroke-width="1.5" opacity=".20"/>
-      <line x1="600" y1="380" x2="324" y2="596"  stroke="#8dcbff" stroke-width="1"  opacity=".24"/>
-      <line x1="600" y1="380" x2="252" y2="648"  stroke="#5e53e3" stroke-width="1"  opacity=".16"/>
-      <line x1="600" y1="380" x2="180" y2="576"  stroke="#8dcbff" stroke-width="1"  opacity=".18"/>
-      <line x1="600" y1="380" x2="108" y2="612"  stroke="#8dcbff" stroke-width="1"  opacity=".12"/>
-      <line x1="600" y1="380" x2="48"  y2="524"  stroke="#c0fe04" stroke-width="1"  opacity=".22"/>
-      <line x1="600" y1="380" x2="24"  y2="440"  stroke="#5e53e3" stroke-width="1.5" opacity=".18"/>
-      <line x1="600" y1="380" x2="12"  y2="352"  stroke="#8dcbff" stroke-width="1"  opacity=".26"/>
-      <line x1="600" y1="380" x2="44"  y2="268"  stroke="#8dcbff" stroke-width="1"  opacity=".14"/>
-      <line x1="600" y1="380" x2="96"  y2="200"  stroke="#c0fe04" stroke-width="1"  opacity=".20"/>
-      <line x1="600" y1="380" x2="164" y2="148"  stroke="#5e53e3" stroke-width="1"  opacity=".24"/>
-      <line x1="600" y1="380" x2="236" y2="92"   stroke="#8dcbff" stroke-width="1.5" opacity=".16"/>
-      <line x1="600" y1="380" x2="308" y2="132"  stroke="#8dcbff" stroke-width="1"  opacity=".18"/>
-      <line x1="600" y1="380" x2="380" y2="72"   stroke="#c0fe04" stroke-width="1"  opacity=".28"/>
-      <line x1="600" y1="380" x2="452" y2="116"  stroke="#8dcbff" stroke-width="1"  opacity=".14"/>
-      <line x1="600" y1="380" x2="524" y2="60"   stroke="#5e53e3" stroke-width="1"  opacity=".22"/>
-      <line x1="600" y1="380" x2="672" y2="188"  stroke="#8dcbff" stroke-width="1"  opacity=".12"/>
-      <line x1="600" y1="380" x2="792" y2="232"  stroke="#5e53e3" stroke-width="1"  opacity=".16"/>
-      <line x1="600" y1="380" x2="912" y2="284"  stroke="#8dcbff" stroke-width="1"  opacity=".18"/>
-      <line x1="600" y1="380" x2="1032" y2="336" stroke="#c0fe04" stroke-width="1"  opacity=".14"/>
-      <line x1="600" y1="380" x2="1056" y2="452" stroke="#8dcbff" stroke-width="1"  opacity=".20"/>
-      <line x1="600" y1="380" x2="948" y2="504"  stroke="#5e53e3" stroke-width="1"  opacity=".16"/>
-      <line x1="600" y1="380" x2="828" y2="540"  stroke="#8dcbff" stroke-width="1"  opacity=".12"/>
-      <line x1="600" y1="380" x2="672" y2="556"  stroke="#8dcbff" stroke-width="1"  opacity=".18"/>
-      <line x1="600" y1="380" x2="516" y2="540"  stroke="#c0fe04" stroke-width="1"  opacity=".14"/>
-      <line x1="600" y1="380" x2="372" y2="504"  stroke="#5e53e3" stroke-width="1"  opacity=".18"/>
-      <line x1="600" y1="380" x2="252" y2="452"  stroke="#8dcbff" stroke-width="1"  opacity=".16"/>
-      <line x1="600" y1="380" x2="168" y2="336"  stroke="#8dcbff" stroke-width="1"  opacity=".12"/>
-      <line x1="600" y1="380" x2="288" y2="284"  stroke="#c0fe04" stroke-width="1"  opacity=".14"/>
-      <line x1="600" y1="380" x2="408" y2="232"  stroke="#5e53e3" stroke-width="1"  opacity=".18"/>
-      <line x1="600" y1="380" x2="528" y2="192"  stroke="#8dcbff" stroke-width="1"  opacity=".16"/>
-      <line x1="600" y1="380" x2="720" y2="256"  stroke="#8dcbff" stroke-width="1"  opacity=".12"/>
-      <line x1="600" y1="380" x2="480" y2="256"  stroke="#8dcbff" stroke-width="1"  opacity=".12"/>
-      <line x1="600" y1="380" x2="600" y2="40"   stroke="#c0fe04" stroke-width="1"  opacity=".18"/>
-      <line x1="600" y1="380" x2="600" y2="720"  stroke="#5e53e3" stroke-width="1"  opacity=".14"/>
-      <line x1="600" y1="380" x2="1180" y2="380" stroke="#8dcbff" stroke-width="1"  opacity=".12"/>
-      <line x1="600" y1="380" x2="20"  y2="380"  stroke="#8dcbff" stroke-width="1"  opacity=".12"/>
-    </svg>
-    <div class="mf-inner">
-      <p class="mf-eyebrow" aria-hidden="true">// PRINCIPLES</p>
-      <h2 id="mf-h" class="mf-title reveal">
-        <span class="mf-line">Everything open.</span>
-        <span class="mf-line mf-line2">Everything reproducible.</span>
-      </h2>
-      <ul class="mf-principles" aria-label="Working principles">
-        <li class="mf-p reveal">Evals as first-class citizens.</li>
-        <li class="mf-p reveal d1">Ship in small loops. Aim for long arcs.</li>
-        <li class="mf-p reveal d2">If it doesn't solve a real problem, it isn't engineering.</li>
-        <li class="mf-p reveal d3">Build the tool, then teach it.</li>
-      </ul>
     </div>
   </section>
 
@@ -1081,8 +878,6 @@
     <div class="wrap">
       <div class="contact-card reveal">
         <div class="glow" aria-hidden="true"></div>
-        <span class="cc-mark tl" aria-hidden="true">+</span>
-        <span class="cc-mark br" aria-hidden="true">// SHIP</span>
         <h2 id="contact-h" class="contact-h">Let's build something <span class="it">that ships.</span></h2>
         <p>Open to AI / Agent engineering and technical DevRel roles — internship or junior, remote-first. I build the tools and the developer content that earns trust in them, so I can ship product and speak to the people who use it. </p>
         <div class="contact-row">
@@ -1095,15 +890,9 @@
 
 </main>
 
-<footer class="rail">
-  <div class="rail-top">
-    <a href="mailto:2379286964@qq.com">2379286964@QQ.COM</a>
-    <a href="https://github.com/ganlin770" target="_blank" rel="noopener">GITHUB ↗<span class="vh">(opens in new tab)</span></a>
-  </div>
-  <div class="rail-bot">
-    <span class="rail-wm"><span class="dot" aria-hidden="true"></span>GAN LIN <span aria-hidden="true">(C)</span> 2026</span>
-    <span>HAND-WRITTEN WEBGL · NO FRAMEWORKS</span>
-  </div>
+<footer>
+  <span class="brand"><span class="dot" aria-hidden="true"></span>GAN LIN</span>
+  <span>© 2026 — Designed &amp; built with WebGL. Cream field × refractive thin-film glass, hand-written shaders.</span>
 </footer>
 
 <script>
