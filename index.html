@@ -46,18 +46,85 @@
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
-  "@type": "Person",
-  "@id": "https://ganlin770.github.io/ganlin-site/#person",
-  "name": "Gan Lin",
-  "url": "https://ganlin770.github.io/ganlin-site/",
-  "jobTitle": "AI / Agent Engineer & Technical Operator",
-  "email": "mailto:2379286964@qq.com",
-  "knowsLanguage": ["en", "zh-CN"],
-  "knowsAbout": [
-    "LLM Evaluation", "Agent Engineering", "Model Context Protocol",
-    "Model Fine-tuning (PEFT/LoRA)", "Full-stack Development", "DevRel"
-  ],
-  "sameAs": ["https://github.com/ganlin770"]
+  "@graph": [
+    {
+      "@type": "Person",
+      "@id": "https://ganlin770.github.io/ganlin-site/#person",
+      "name": "Gan Lin",
+      "alternateName": [
+        "甘霖"
+      ],
+      "url": "https://ganlin770.github.io/ganlin-site/",
+      "jobTitle": "AI / Agent Engineer & Technical Operator",
+      "description": "AI/Agent engineer building open-source agent tooling — LLM evaluation frameworks, MCP servers, and fine-tuned tool routers — and turning them into reproducible developer content.",
+      "email": "mailto:2379286964@qq.com",
+      "knowsLanguage": [
+        "en",
+        "zh-CN"
+      ],
+      "knowsAbout": [
+        "LLM Evaluation",
+        "Agent Engineering",
+        "Model Context Protocol (MCP)",
+        "Retrieval-Augmented Generation",
+        "Model Fine-tuning (PEFT/LoRA)",
+        "Full-stack Development",
+        "Developer Relations",
+        "Statistical Data Analysis",
+        "Research & Grant-writing Workflows"
+      ],
+      "sameAs": [
+        "https://github.com/ganlin770",
+        "https://x.com/DomKing32763"
+      ],
+      "mainEntityOfPage": {
+        "@id": "https://ganlin770.github.io/ganlin-site/#webpage"
+      }
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://ganlin770.github.io/ganlin-site/#website",
+      "url": "https://ganlin770.github.io/ganlin-site/",
+      "name": "Gan Lin — AI / Agent Engineer",
+      "inLanguage": "en",
+      "publisher": {
+        "@id": "https://ganlin770.github.io/ganlin-site/#person"
+      }
+    },
+    {
+      "@type": "ProfilePage",
+      "@id": "https://ganlin770.github.io/ganlin-site/#webpage",
+      "url": "https://ganlin770.github.io/ganlin-site/",
+      "name": "Gan Lin — AI / Agent Engineer × Technical Operator",
+      "about": {
+        "@id": "https://ganlin770.github.io/ganlin-site/#person"
+      },
+      "isPartOf": {
+        "@id": "https://ganlin770.github.io/ganlin-site/#website"
+      }
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "name": "nsfc-nssfc-grant-writing",
+      "codeRepository": "https://github.com/ganlin770/nsfc-nssfc-grant-writing",
+      "programmingLanguage": "Python",
+      "author": {
+        "@id": "https://ganlin770.github.io/ganlin-site/#person"
+      },
+      "description": "Open-source assistant for writing China NSFC / NSSFC research-grant proposals; one-click technical-roadmap, framework and Gantt figure generation (matplotlib)."
+    },
+    {
+      "@type": "SoftwareApplication",
+      "name": "mti-shangan",
+      "url": "https://ganlin770.github.io/mti-shangan",
+      "applicationCategory": "EducationalApplication",
+      "operatingSystem": "Web",
+      "author": {
+        "@id": "https://ganlin770.github.io/ganlin-site/#person"
+      },
+      "description": "Spaced-repetition (SRS) practice web app for the MTI postgraduate translation exam."
+    }
+  ]
 }
 </script>
 
